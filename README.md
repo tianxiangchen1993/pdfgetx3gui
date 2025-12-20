@@ -1,5 +1,7 @@
 # PDFgetX3 GUI v2.0 - Optimized Version
 
+English | [简体中文](README_CN.md)
+
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
