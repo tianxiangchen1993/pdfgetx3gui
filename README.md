@@ -9,6 +9,11 @@
 
 This is a complete optimization of the original PDFgetX3 GUI with:
 
+### 🆕 Latest Updates
+- **PyQt6 Migration**: Fully migrated to PyQt6 for modern Qt 6 support
+- **Lorch Modification**: Built-in Lorch function to reduce PDF termination ripples
+- **Simplified Startup**: Easy installation with `pdfgetx3gui` command
+
 ### ✨ Code Quality Improvements
 - **MVC Architecture**: Clean separation of UI, business logic, and data
 - **Type Annotations**: Full Python type hints for better IDE support
@@ -39,22 +44,33 @@ This is a complete optimization of the original PDFgetX3 GUI with:
 
 - Python 3.8 or higher
 - PDFgetX3 ([diffpy.pdfgetx](https://www.diffpy.org/products/pdfgetx.html))
-- PyQt5
-- NumPy, SciPy, Matplotlib
+- **PyQt6** >= 6.0.0 (Qt 6 framework)
+- matplotlib >= 3.5.0 (Qt6 support required)
+- NumPy >= 1.19.0
+- SciPy >= 1.5.0
 
 ## 🚀 Installation
 
-### From Source
+### Quick Install (Recommended)
 
 ```bash
-cd pdfgetx3_gui_v2
+cd PDFgetX3GUI_v2
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Or use conda for diffpy.pdfgetx
+conda install -c conda-forge diffpy.pdfgetx
+
+# Install the package
 pip install -e .
 ```
 
-### With Development Tools
-
+**After installation, launch with:**
 ```bash
-pip install -e ".[dev]"
+pdfgetx3gui
+# or
+pdfgetx3gui-v2
 ```
 
 ## 💻 Usage
@@ -62,6 +78,8 @@ pip install -e ".[dev]"
 ### Run the GUI
 
 ```bash
+pdfgetx3gui
+# or
 pdfgetx3gui-v2
 ```
 
@@ -106,6 +124,7 @@ print(f"G(r): {len(results.gr)} points")
 - Multiple resampling modes (linear, exponential)
 - Background subtraction
 - Composition-based corrections
+- **Lorch Modification**: Reduce PDF termination ripples with built-in Lorch function
 
 ### Visualization
 - I(Q), S(Q), F(Q), G(r) plots
@@ -163,14 +182,17 @@ black src/pdfgetx3_gui tests
 
 | Feature | v1.0 | v2.0 |
 |---------|------|------|
-| Code Lines (main) | 1368 | ~500 (modular) |
-| Type Annotations | ❌ | ✅ |
-| Configuration | Text files | JSON |
-| Testing | ❌ | ✅ Pytest |
-| Architecture | Monolithic | MVC Pattern |
-| Error Handling | Basic | Comprehensive |
-| Logging | Print statements | Proper logging |
-| Documentation | Minimal | Extensive |
+| **Code Lines (main)** | 1368 lines single file | ~500 lines modular |
+| **GUI Framework** | PyQt5 | ✅ **PyQt6** (Qt 6) |
+| **Type Annotations** | ❌ | ✅ Full |
+| **Configuration** | Text files | JSON |
+| **Testing** | ❌ | ✅ Pytest |
+| **Architecture** | Monolithic | MVC Pattern |
+| **Error Handling** | Basic | Comprehensive |
+| **Logging** | Print statements | Proper logging |
+| **Documentation** | Minimal | Extensive |
+| **Startup Command** | python -m ... | ✅ **pdfgetx3gui** |
+| **Lorch Modification** | ❌ | ✅ **Built-in** |
 
 ## 🤝 Contributing
 
