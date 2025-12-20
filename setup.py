@@ -7,15 +7,18 @@ from pathlib import Path
 
 # Read the long description from README
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text(encoding='utf-8')
+long_description = ""
+readme_file = this_directory / "README.md"
+if readme_file.exists():
+    long_description = readme_file.read_text(encoding='utf-8')
 
-# Read requirements
-requirements = []
-with open('requirements.txt', 'r', encoding='utf-8') as f:
-    for line in f:
-        line = line.strip()
-        if line and not line.startswith('#') and not line.startswith('conda'):
-            requirements.append(line)
+# Define requirements directly
+requirements = [
+    'PyQt6>=6.0.0',
+    'matplotlib>=3.5.0',
+    'numpy>=1.19.0',
+    'scipy>=1.5.0',
+]
 
 setup(
     name="pdfgetx3gui-v2",
