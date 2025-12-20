@@ -1,0 +1,18 @@
+# Dependencies for PDFgetX3 GUI v2.0
+
+# Core GUI Framework (Qt 6)
+PyQt6>=6.0.0
+
+# Scientific Computing
+numpy>=1.19.0
+scipy>=1.5.0
+
+# Plotting (requires Qt6 support)
+matplotlib>=3.5.0
+
+# The main PDF calculation engine (must be installed via conda)
+# conda install -c conda-forge diffpy.pdfgetx
+
+# Note: diffpy.pdfgetx should be installed using conda, not pip:
+# conda config --add channels conda-forge
+# conda install diffpy.pdfgetx

@@ -1,0 +1,761 @@
+"""
+Main window implementation.
+
+Modern PyQt5 GUI with improved layout and organization.
+"""
+
+from PyQt5 import QtCore, QtWidgets, QtGui
+from pathlib import Path
+import logging
+from typing import Optional
+
+from ..config.settings import Settings, PDFParameters
+from ..core.calculator import PDFCalculator
+from ..utils.logger import get_logger
+from ..utils.i18n import get_translator, tr, set_language
+
+logger = get_logger(__name__)
+
+
+class MainWindow(QtWidgets.QMainWindow):
+    """
+    Main application window with improved design.
+    
+    Features:
+    - Tab-based organization
+    - Clear parameter grouping
+    - Modern styling
+    - Better error feedback
+    """
+    
+    # Signals
+    calculation_requested = QtCore.pyqtSignal(PDFParameters, str, str)
+    
+    def __init__(self):
+        """Initialize the main window."""
+        super().__init__()
+        
+        self.settings = Settings()
+        self.calculator = PDFCalculator()
+        self.current_results = None
+        self.translator = get_translator()
+        
+        # Load saved settings (including language preference)
+        self.settings.load()
+        
+        # Set language if saved in settings
+        if hasattr(self.settings, 'language'):
+            set_language(self.settings.language)
+        
+        self._setup_ui()
+        self._apply_stylesheet()
+        self._connect_signals()
+        self._apply_settings()
+        
+        logger.info("Main window initialized")
+    
+    def _apply_stylesheet(self):
+        """Apply modern stylesheet to the application."""
+        from .styles import MODERN_STYLE
+        self.setStyleSheet(MODERN_STYLE)
+        
+        # Set object names for custom styling
+        self.calculate_btn.setObjectName("calculate_btn")
+        self.save_btn.setObjectName("save_btn")
+    
+    def _setup_ui(self):
+        """Setup the user interface."""
+        self.setWindowTitle(tr('window_title'))
+        self.setMinimumSize(1200, 800)
+        self.resize(1400, 900)
+        
+        # Set window icon
+        icon_path = Path(__file__).parent / "resources" / "icon.png"
+        if icon_path.exists():
+            self.setWindowIcon(QtGui.QIcon(str(icon_path)))
+        
+        # Central widget
+        central_widget = QtWidgets.QWidget()
+        self.setCentralWidget(central_widget)
+        
+        # Main layout with better margins
+        main_layout = QtWidgets.QVBoxLayout(central_widget)
+        main_layout.setContentsMargins(8, 8, 8, 8)
+        main_layout.setSpacing(8)
+        
+        # Create menu bar
+        self._create_menu_bar()
+        
+        # Create toolbar
+        self._create_toolbar()
+        
+        # Create main content area with splitter
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        
+        # Left panel: Parameters
+        left_panel = self._create_left_panel()
+        splitter.addWidget(left_panel)
+        
+        # Right panel: Plot area
+        right_panel = self._create_right_panel()
+        splitter.addWidget(right_panel)
+        
+        # Set splitter sizes (30% left, 70% right)
+        splitter.setSizes([300, 700])
+        
+        main_layout.addWidget(splitter)
+        
+        # Status bar
+        self.statusBar().showMessage("Ready")
+        
+        logger.debug("UI setup completed")
+    
+    def _create_menu_bar(self):
+        """Create menu bar."""
+        menubar = self.menuBar()
+        
+        # File menu
+        file_menu = menubar.addMenu("&File")
+        
+        open_action = QtWidgets.QAction("&Open Data File...", self)
+        open_action.setShortcut("Ctrl+O")
+        open_action.triggered.connect(self._open_file)
+        file_menu.addAction(open_action)
+        
+        open_bkg_action = QtWidgets.QAction("Open &Background File...", self)
+        open_bkg_action.setShortcut("Ctrl+B")
+        open_bkg_action.triggered.connect(self._open_background_file)
+        file_menu.addAction(open_bkg_action)
+        
+        file_menu.addSeparator()
+        
+        save_action = QtWidgets.QAction("&Save Results...", self)
+        save_action.setShortcut("Ctrl+S")
+        save_action.triggered.connect(self._save_results)
+        file_menu.addAction(save_action)
+        
+        file_menu.addSeparator()
+        
+        exit_action = QtWidgets.QAction("E&xit", self)
+        exit_action.setShortcut("Ctrl+Q")
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
+        
+        # Settings menu
+        settings_menu = menubar.addMenu("&Settings")
+        
+        preferences_action = QtWidgets.QAction("&Preferences...", self)
+        preferences_action.triggered.connect(self._show_preferences)
+        settings_menu.addAction(preferences_action)
+        
+        # Help menu
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Tab widget for different parameter groups
+        self.param_tabs = QtWidgets.QTabWidget()
+        
+        # Files & Processing tab (combined)
+        files_tab = self._create_files_tab()
+        self.param_tabs.addTab(files_tab, "Files && Processing")
+        
+        # Parameters tab
+        params_tab = self._create_parameters_tab()
+        self.param_tabs.addTab(params_tab, "Parameters")
+        
+        # Display tab
+        display_tab = self._create_display_tab()
+        self.param_tabs.addTab(display_tab, "Display")
+        
+        layout.addWidget(self.param_tabs)
+        
+        # Action buttons at bottom
+        button_layout = QtWidgets.QHBoxLayout()
+        
+        self.calculate_btn = QtWidgets.QPushButton("Calculate (F5)")
+        self.calculate_btn.clicked.connect(self._run_calculation)
+        self.calculate_btn.setMinimumHeight(40)
+        button_layout.addWidget(self.calculate_btn)
+        
+        self.save_btn = QtWidgets.QPushButton("Save Results")
+        self.save_btn.clicked.connect(self._save_results)
+        self.save_btn.setMinimumHeight(40)
+        button_layout.addWidget(self.save_btn)
+        
+        layout.addLayout(button_layout)
+        
+        return panel
+    
+    def _create_files_tab(self) -> QtWidgets.QWidget:
+        """Create files and processing tab."""
+        tab = QtWidgets.QWidget()
+        layout = QtWidgets.QFormLayout(tab)
+        layout.setLabelAlignment(QtCore.Qt.AlignRight)
+        
+        # === Data Format Section (FIRST) ===
+        format_section = QtWidgets.QLabel("<b>Data Format</b>")
+        layout.addRow(format_section)
+        
+        # Data format selection
+        format_layout = QtWidgets.QHBoxLayout()
+        self.format_q = QtWidgets.QRadioButton("Q (Å⁻¹)")
+        self.format_q.setChecked(True)
+        format_layout.addWidget(self.format_q)
+        
+        self.format_2theta = QtWidgets.QRadioButton("2θ (deg)")
+        format_layout.addWidget(self.format_2theta)
+        format_layout.addStretch()
+        
+        layout.addRow("Format:", format_layout)
+        
+        # Wavelength (for 2theta mode)
+        self.wavelength_spin = QtWidgets.QDoubleSpinBox()
+        self.wavelength_spin.setRange(0.01, 10.0)
+        self.wavelength_spin.setValue(0.270793)
+        self.wavelength_spin.setSingleStep(0.001)
+        self.wavelength_spin.setDecimals(6)
+        self.wavelength_spin.setSuffix(" Å")
+        self.wavelength_spin.setEnabled(False)
+        self.wavelength_spin.setMinimumWidth(120)
+        layout.addRow("Wavelength:", self.wavelength_spin)
+        
+        # Connect format change
+        self.format_2theta.toggled.connect(self.wavelength_spin.setEnabled)
+        
+        # Composition (SECOND)
+        self.composition_edit = QtWidgets.QLineEdit("LaB6")
+        self.composition_edit.setToolTip("Chemical composition (e.g., LaB6, Si, SiO2)")
+        self.composition_edit.setMinimumWidth(150)
+        layout.addRow("Composition:", self.composition_edit)
+        
+        # Spacer
+        layout.addRow(QtWidgets.QLabel(""))
+        
+        # === File Selection Section ===
+        file_section = QtWidgets.QLabel("<b>Data Files</b>")
+        layout.addRow(file_section)
+        
+        # Data file
+        data_layout = QtWidgets.QHBoxLayout()
+        self.data_file_edit = QtWidgets.QLineEdit()
+        self.data_file_edit.setPlaceholderText("Select data file...")
+        data_layout.addWidget(self.data_file_edit)
+        
+        browse_data_btn = QtWidgets.QPushButton("Browse...")
+        browse_data_btn.clicked.connect(self._open_file)
+        browse_data_btn.setMaximumWidth(80)
+        data_layout.addWidget(browse_data_btn)
+        
+        layout.addRow("Data File:", data_layout)
+        
+        # Background file
+        bkg_layout = QtWidgets.QHBoxLayout()
+        self.bkg_file_edit = QtWidgets.QLineEdit()
+        self.bkg_file_edit.setPlaceholderText("Select background file...")
+        bkg_layout.addWidget(self.bkg_file_edit)
+        
+        browse_bkg_btn = QtWidgets.QPushButton("Browse...")
+        browse_bkg_btn.clicked.connect(self._open_background_file)
+        browse_bkg_btn.setMaximumWidth(80)
+        bkg_layout.addWidget(browse_bkg_btn)
+        
+        layout.addRow("Background:", bkg_layout)
+        
+        # === Resampling Section ===
+        layout.addRow(QtWidgets.QLabel(""))  # Spacer
+        resampling_section = QtWidgets.QLabel("<b>Resampling</b>")
+        layout.addRow(resampling_section)
+        
+        # Resampling options
+        resampling_layout = QtWidgets.QHBoxLayout()
+        self.rebin_none = QtWidgets.QRadioButton("None")
+        self.rebin_none.setChecked(True)
+        resampling_layout.addWidget(self.rebin_none)
+        
+        self.rebin_linear = QtWidgets.QRadioButton("Linear")
+        resampling_layout.addWidget(self.rebin_linear)
+        
+        self.rebin_exp = QtWidgets.QRadioButton("Exp")
+        resampling_layout.addWidget(self.rebin_exp)
+        resampling_layout.addStretch()
+        
+        layout.addRow("Method:", resampling_layout)
+        
+        # === Recent Files Section ===
+        layout.addRow(QtWidgets.QLabel(""))  # Spacer
+        layout.addRow(QtWidgets.QLabel("<b>Recent Files</b>"))
+        
+        self.recent_files_list = QtWidgets.QListWidget()
+        self.recent_files_list.setMaximumHeight(120)
+        self.recent_files_list.itemDoubleClicked.connect(self._load_recent_file)
+        layout.addRow(self.recent_files_list)
+        
+        return tab
+    
+    def _create_parameters_tab(self) -> QtWidgets.QWidget:
+        """Create parameters tab."""
+        tab = QtWidgets.QWidget()
+        layout = QtWidgets.QFormLayout(tab)
+        layout.setLabelAlignment(QtCore.Qt.AlignRight)
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.ExpandingFieldsGrow)
+        
+        # === Processing Parameters ===
+        processing_section = QtWidgets.QLabel("<b>Processing</b>")
+        layout.addRow(processing_section)
+        
+        # Background scale
+        self.bkgscale_spin = QtWidgets.QDoubleSpinBox()
+        self.bkgscale_spin.setRange(0.0, 10.0)
+        self.bkgscale_spin.setValue(1.0)
+        self.bkgscale_spin.setSingleStep(0.1)
+        self.bkgscale_spin.setDecimals(3)
+        self.bkgscale_spin.setMinimumWidth(120)
+        self.bkgscale_spin.setToolTip("Background scaling factor")
+        layout.addRow("Bkg Scale:", self.bkgscale_spin)
+        
+        # Rpoly
+        self.rpoly_spin = QtWidgets.QDoubleSpinBox()
+        self.rpoly_spin.setRange(0.0, 3.0)
+        self.rpoly_spin.setValue(1.0)
+        self.rpoly_spin.setSingleStep(0.1)
+        self.rpoly_spin.setDecimals(2)
+        self.rpoly_spin.setMinimumWidth(120)
+        self.rpoly_spin.setToolTip("Polynomial parameter for PDF termination ripples correction")
+        layout.addRow("Rpoly:", self.rpoly_spin)
+        
+        # Spacer
+        layout.addRow(QtWidgets.QLabel(""))
+        
+        # === Q-space Parameters ===
+        q_section = QtWidgets.QLabel("<b>Q-space</b>")
+        layout.addRow(q_section)
+        
+        self.qmin_spin = QtWidgets.QDoubleSpinBox()
+        self.qmin_spin.setRange(0.01, 100.0)
+        self.qmin_spin.setValue(1.0)
+        self.qmin_spin.setSingleStep(0.1)
+        self.qmin_spin.setDecimals(2)
+        self.qmin_spin.setSuffix(" Å⁻¹")
+        self.qmin_spin.setMinimumWidth(120)
+        layout.addRow("Qmin:", self.qmin_spin)
+        
+        self.qmax_spin = QtWidgets.QDoubleSpinBox()
+        self.qmax_spin.setRange(1.0, 100.0)
+        self.qmax_spin.setValue(23.0)
+        self.qmax_spin.setSingleStep(0.1)
+        self.qmax_spin.setDecimals(2)
+        self.qmax_spin.setSuffix(" Å⁻¹")
+        self.qmax_spin.setMinimumWidth(120)
+        layout.addRow("Qmax:", self.qmax_spin)
+        
+        self.qmaxinst_spin = QtWidgets.QDoubleSpinBox()
+        self.qmaxinst_spin.setRange(1.0, 100.0)
+        self.qmaxinst_spin.setValue(23.0)
+        self.qmaxinst_spin.setSingleStep(0.1)
+        self.qmaxinst_spin.setDecimals(2)
+        self.qmaxinst_spin.setSuffix(" Å⁻¹")
+        self.qmaxinst_spin.setMinimumWidth(120)
+        layout.addRow("Qmax (inst):", self.qmaxinst_spin)
+        
+        # Spacer
+        layout.addRow(QtWidgets.QLabel(""))
+        
+        # === R-space Parameters ===
+        r_section = QtWidgets.QLabel("<b>R-space</b>")
+        layout.addRow(r_section)
+        
+        self.rmin_spin = QtWidgets.QDoubleSpinBox()
+        self.rmin_spin.setRange(0.01, 100.0)
+        self.rmin_spin.setValue(0.5)
+        self.rmin_spin.setSingleStep(0.1)
+        self.rmin_spin.setDecimals(2)
+        self.rmin_spin.setSuffix(" Å")
+        self.rmin_spin.setMinimumWidth(120)
+        layout.addRow("rmin:", self.rmin_spin)
+        
+        self.rmax_spin = QtWidgets.QDoubleSpinBox()
+        self.rmax_spin.setRange(1.0, 10000.0)
+        self.rmax_spin.setValue(30.0)
+        self.rmax_spin.setSingleStep(1.0)
+        self.rmax_spin.setDecimals(1)
+        self.rmax_spin.setSuffix(" Å")
+        self.rmax_spin.setMinimumWidth(120)
+        layout.addRow("rmax:", self.rmax_spin)
+        
+        self.rstep_spin = QtWidgets.QDoubleSpinBox()
+        self.rstep_spin.setRange(0.001, 1.0)
+        self.rstep_spin.setValue(0.01)
+        self.rstep_spin.setSingleStep(0.001)
+        self.rstep_spin.setDecimals(3)
+        self.rstep_spin.setSuffix(" Å")
+        self.rstep_spin.setMinimumWidth(120)
+        layout.addRow("rstep:", self.rstep_spin)
+        
+        layout.addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
+                                              QtWidgets.QSizePolicy.Expanding))
+        
+        return tab
+    
+    
+    def _create_display_tab(self) -> QtWidgets.QWidget:
+        """Create display tab."""
+        tab = QtWidgets.QWidget()
+        layout = QtWidgets.QFormLayout(tab)
+        
+        # Plot selection
+        plot_group = QtWidgets.QGroupBox("Plots to Display")
+        plot_layout = QtWidgets.QVBoxLayout()
+        
+        self.plot_iq = QtWidgets.QCheckBox("I(Q) - Intensity")
+        plot_layout.addWidget(self.plot_iq)
+        
+        self.plot_sq = QtWidgets.QCheckBox("S(Q) - Structure Factor")
+        plot_layout.addWidget(self.plot_sq)
+        
+        self.plot_fq = QtWidgets.QCheckBox("F(Q) - Reduced Structure Function")
+        plot_layout.addWidget(self.plot_fq)
+        
+        self.plot_gr = QtWidgets.QCheckBox("G(r) - Pair Distribution Function")
+        self.plot_gr.setChecked(True)
+        plot_layout.addWidget(self.plot_gr)
+        
+        plot_group.setLayout(plot_layout)
+        layout.addRow(plot_group)
+        
+        # Display options
+        self.reset_axes_check = QtWidgets.QCheckBox("Reset axes on update")
+        self.reset_axes_check.setChecked(True)
+        layout.addRow(self.reset_axes_check)
+        
+        layout.addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
+                                              QtWidgets.QSizePolicy.Expanding))
+        
+        return tab
+    
+    def _create_right_panel(self) -> QtWidgets.QWidget:
+        """Create right plot panel."""
+        from ..plotting import PlotWidget
+        
+        panel = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Add matplotlib plot widget
+        self.plot_widget = PlotWidget()
+        layout.addWidget(self.plot_widget)
+        
+        return panel
+    
+    def _connect_signals(self):
+        """Connect signals and slots."""
+        # Parameter validation
+        self.qmin_spin.valueChanged.connect(self._validate_q_parameters)
+        self.qmax_spin.valueChanged.connect(self._validate_q_parameters)
+        self.qmaxinst_spin.valueChanged.connect(self._validate_q_parameters)
+        
+        logger.debug("Signals connected")
+    
+    def _apply_settings(self):
+        """Apply loaded settings to UI."""
+        params = self.settings.parameters
+        
+        # Set parameter values
+        self.composition_edit.setText(params.composition)
+        self.qmin_spin.setValue(params.qmin)
+        self.qmax_spin.setValue(params.qmax)
+        self.qmaxinst_spin.setValue(params.qmaxinst)
+        self.rmin_spin.setValue(params.rmin)
+        self.rmax_spin.setValue(params.rmax)
+        self.rstep_spin.setValue(params.rstep)
+        self.rpoly_spin.setValue(params.rpoly)
+        self.bkgscale_spin.setValue(params.bkgscale)
+        self.wavelength_spin.setValue(params.wavelength)
+        
+        # Set file paths
+        if self.settings.file_config.current_file:
+            self.data_file_edit.setText(self.settings.file_config.current_file)
+        if self.settings.file_config.current_bkg_file:
+            self.bkg_file_edit.setText(self.settings.file_config.current_bkg_file)
+        
+        # Update recent files
+        self._update_recent_files()
+        
+        logger.debug("Settings applied to UI")
+    
+    def _update_recent_files(self):
+        """Update recent files list."""
+        self.recent_files_list.clear()
+        for filepath in self.settings.file_config.recent_files:
+            self.recent_files_list.addItem(str(Path(filepath).name))
+    
+    def _validate_q_parameters(self):
+        """Validate Q parameter relationships."""
+        qmin = self.qmin_spin.value()
+        qmax = self.qmax_spin.value()
+        qmaxinst = self.qmaxinst_spin.value()
+        
+        # Ensure qmin < qmax <= qmaxinst
+        if qmax <= qmin:
+            self.statusBar().showMessage("Warning: Qmax must be greater than Qmin", 3000)
+        if qmax > qmaxinst:
+            self.statusBar().showMessage("Warning: Qmax cannot exceed Qmax inst", 3000)
+    
+    def _open_file(self):
+        """Open data file dialog."""
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Select Data File",
+            "",
+            "Data Files (*.txt *.dat *.xy *.xye *.csv);;All Files (*.*)"
+        )
+        
+        if file_path:
+            self.data_file_edit.setText(file_path)
+            self.settings.file_config.add_recent_file(file_path)
+            self._update_recent_files()
+            self.settings.save()
+            logger.info(f"Loaded data file: {file_path}")
+    
+    def _open_background_file(self):
+        """Open background file dialog."""
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Select Background File",
+            "",
+            "Data Files (*.txt *.dat *.xy *.xye *.csv);;All Files (*.*)"
+        )
+        
+        if file_path:
+            self.bkg_file_edit.setText(file_path)
+            self.settings.file_config.add_recent_file(file_path, is_background=True)
+            self.settings.save()
+            logger.info(f"Loaded background file: {file_path}")
+    
+    def _load_recent_file(self, item):
+        """Load file from recent files list."""
+        index = self.recent_files_list.row(item)
+        if index < len(self.settings.file_config.recent_files):
+            file_path = self.settings.file_config.recent_files[index]
+            self.data_file_edit.setText(file_path)
+    
+    def _run_calculation(self):
+        """Run PDF calculation."""
+        from ..workers import CalculationWorker
+        
+        # Get current parameters
+        params = self._get_parameters()
+        data_file = self.data_file_edit.text()
+        bkg_file = self.bkg_file_edit.text() if self.bkg_file_edit.text() else None
+        
+        if not data_file:
+            QtWidgets.QMessageBox.warning(self, "No Data File", "Please select a data file first.")
+            return
+        
+        # Check if any plot is selected
+        if not any([params.show_iq, params.show_sq, params.show_fq, params.show_gr]):
+            QtWidgets.QMessageBox.warning(self, "No Plots Selected", "Please select at least one plot to display.")
+            return
+        
+        # Stop any existing calculation
+        if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
+            self.worker.stop()
+            self.worker.wait()
+        
+        # Create and start worker thread
+        self.worker = CalculationWorker(params, data_file, bkg_file)
+        
+        # Connect signals
+        self.worker.progress.connect(self._on_calculation_progress)
+        self.worker.finished.connect(self._on_calculation_finished)
+        self.worker.error.connect(self._on_calculation_error)
+        
+        # Update UI
+        self.calc_action.setEnabled(False)
+        self.calculate_btn.setEnabled(False)
+        self.stop_action.setEnabled(True)
+        self.stop_action.triggered.connect(self.worker.stop)
+        
+        # Start calculation
+        self.statusBar().showMessage("Calculating (auto-update)..." if hasattr(self, 'current_results') else "Calculating...")
+        self.worker.start()
+        logger.info(f"Started calculation for {data_file}")
+    
+    def _on_calculation_progress(self, percent: int):
+        """Handle calculation progress update."""
+        self.statusBar().showMessage(f"Calculating... {percent}%")
+    
+    def _on_calculation_finished(self, results):
+        """Handle calculation completion."""
+        from ..core.calculator import PDFResults
+        
+        # Store results
+        self.current_results = results
+        
+        # Update plot
+        params = self._get_parameters()
+        self.plot_widget.plot_results(
+            results,
+            show_iq=params.show_iq,
+            show_sq=params.show_sq,
+            show_fq=params.show_fq,
+            show_gr=params.show_gr,
+            reset_axes=params.reset_axis_on_update
+        )
+        
+        # Update UI
+        self.calc_action.setEnabled(True)
+        self.calculate_btn.setEnabled(True)
+        self.stop_action.setEnabled(False)
+        
+        self.statusBar().showMessage("Calculation completed successfully", 5000)
+        logger.info("Calculation completed and results plotted")
+    
+    def _on_calculation_error(self, error_msg: str):
+        """Handle calculation error."""
+        # Update UI
+        self.calc_action.setEnabled(True)
+        self.calculate_btn.setEnabled(True)
+        self.stop_action.setEnabled(False)
+        
+        # Show error
+        QtWidgets.QMessageBox.critical(
+            self,
+            "Calculation Error",
+            f"An error occurred during calculation:\n\n{error_msg}"
+        )
+        
+        self.statusBar().showMessage("Calculation failed", 5000)
+        logger.error(f"Calculation failed: {error_msg}")
+    
+    def _save_results(self):
+        """Save calculation results."""
+        if not hasattr(self, 'current_results') or self.current_results is None:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "No Results",
+                "Please run a calculation first before saving."
+            )
+            return
+        
+        # Get save location
+        data_file = self.data_file_edit.text()
+        default_name = Path(data_file).stem if data_file else "results"
+        
+        save_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save Results",
+            default_name,
+            "All Files (*.*)"
+        )
+        
+        if not save_path:
+            return
+        
+        try:
+            # Get parameters to know what to save
+            params = self._get_parameters()
+            
+            # Save results
+            self.calculator.save_results(
+                self.current_results,
+                basename=save_path,
+                save_iq=params.show_iq,
+                save_sq=params.show_sq,
+                save_fq=params.show_fq,
+                save_gr=params.show_gr
+            )
+            
+            self.statusBar().showMessage(f"Results saved to {Path(save_path).parent}", 5000)
+            logger.info(f"Results saved to {save_path}")
+            
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Save Error",
+                f"Failed to save results:\n\n{str(e)}"
+            )
+            logger.error(f"Save failed: {e}")
+    
+    def _show_preferences(self):
+        """Show preferences dialog."""
+        # TODO: Implement preferences dialog
+        QtWidgets.QMessageBox.information(self, "Preferences", "Preferences dialog coming soon!")
+    
+    def _show_about(self):
+        """Show about dialog."""
+        about_text = """
+        <div style='text-align: center;'>
+            <h2 style='color: #2196F3; margin-bottom: 10px;'>PDFgetX3 GUI v2.0</h2>
+            <p style='font-size: 11pt; color: #666;'><i>Optimized Modern Version</i></p>
+            
+            <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
+            
+            <h3 style='color: #333; margin-top: 20px;'>✨ Key Features</h3>
+            <p style='text-align: left; margin-left: 40px;'>
+                • <b>MVC Architecture</b> - Clean separation of concerns<br>
+                • <b>Type-Safe Code</b> - 100% type annotations<br>
+                • <b>Modern UI</b> - Polished visual design<br>
+                • <b>JSON Configuration</b> - Structured settings<br>
+                • <b>Async Calculations</b> - Non-blocking UI<br>
+                • <b>Comprehensive Logging</b> - Full debugging support
+            </p>
+            
+            <hr style='margin: 20px 0; border: none; border-top: 1px solid #ddd;'>
+            
+            <p style='margin-top: 20px;'>
+                <b>Original Author:</b> Kenneth P. Marshall<br>
+                <b>Optimization:</b> AI Assistant (2025)<br>
+                <b>License:</b> MIT License
+            </p>
+            
+            <p style='margin-top: 15px; font-size: 9pt; color: #999;'>
+                Built with Python, PyQt5, NumPy, SciPy & Matplotlib
+            </p>
+        </div>
+        """
+        
+        QtWidgets.QMessageBox.about(
+            self,
+            "About PDFgetX3 GUI v2.0",
+            about_text
+        )
+    
+    def _get_parameters(self) -> PDFParameters:
+        """Get current parameters from UI."""
+        dataformat = "QA" if self.format_q.isChecked() else "twotheta"
+        
+        rebin_mode = "none"
+        if self.rebin_linear.isChecked():
+            rebin_mode = "linear"
+        elif self.rebin_exp.isChecked():
+            rebin_mode = "exponential"
+        
+        return PDFParameters(
+            qmin=self.qmin_spin.value(),
+            qmax=self.qmax_spin.value(),
+            qmaxinst=self.qmaxinst_spin.value(),
+            rmin=self.rmin_spin.value(),
+            rmax=self.rmax_spin.value(),
+            rstep=self.rstep_spin.value(),
+            rpoly=self.rpoly_spin.value(),
+            bkgscale=self.bkgscale_spin.value(),
+            composition=self.composition_edit.text(),
+            dataformat=dataformat,
+            wavelength=self.wavelength_spin.value(),
+            rebin_mode=rebin_mode,
+            show_iq=self.plot_iq.isChecked(),
+            show_sq=self.plot_sq.isChecked(),
+            show_fq=self.plot_fq.isChecked(),
+            show_gr=self.plot_gr.isChecked(),
+            reset_axis_on_update=self.reset_axes_check.isChecked()
+        )
+    
+    def closeEvent(self, event):
+        """Handle window close event."""
+        # Save settings
+        self.settings.parameters = self._get_parameters()
+        self.settings.file_config.current_file = self.data_file_edit.text()
+        self.settings.file_config.current_bkg_file = self.bkg_file_edit.text()
+        self.settings.save()
+        
+        logger.info("Application closing, settings saved")
+        event.accept()
