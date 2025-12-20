@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FileIO:
     """File input/output operations."""
     
-    SUPPORTED_EXTENSIONS = [".txt", ".dat", ".xy", ".xye", ".csv"]
+    SUPPORTED_EXTENSIONS = [".txt", ".dat", ".xy", ".xye", ".csv", ".chi"]
     
     @staticmethod
     def load_data(filepath: Union[str, Path]) -> Tuple[np.ndarray, np.ndarray]:
