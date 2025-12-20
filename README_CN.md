@@ -53,18 +53,38 @@
 
 ## 🚀 安装
 
-### 快速安装（推荐）
+### 前置要求
+
+**重要**：PDFgetX3 需要从哥伦比亚大学获取免费的学术许可证。
+
+#### 步骤 1：获取 PDFgetX3 许可证（必需）
+
+PDFgetX3 免费提供给学术研究使用。请按以下步骤操作：
+
+1. 访问许可证页面：[https://columbia.resoluteinnovation.com/technologies/M11-120](https://columbia.resoluteinnovation.com/technologies/M11-120)
+2. 选择 "Express Licensing" → "Sign In To Continue"
+3. 登录后，搜索 "pdfgetx3" 或 "m11-120"
+4. 再次选择 "Express Licensing" → 选择 "PDFgetX3 and PDFgetN3, Free Academic"
+5. 提交许可证申请并等待确认邮件
+6. 从此处下载：[https://columbia.resoluteinnovation.com/downloads](https://columbia.resoluteinnovation.com/downloads)
+
+非学术用途请联系 [Columbia Technology Ventures](mailto:techtransfer@columbia.edu)。
+
+**官方文档**：[https://www.diffpy.org/products/pdfgetx.html](https://www.diffpy.org/products/pdfgetx.html)
+
+#### 步骤 2：安装 PDFgetX3
+
+获取许可证后，按照下载包中提供的说明安装 PDFgetX3。
+
+### 安装 GUI 应用程序
 
 ```bash
 cd PDFgetX3GUI_v2
 
-# 安装依赖
+# 安装 Python 依赖
 pip install -r requirements.txt
 
-# 或使用 conda 安装 diffpy.pdfgetx
-conda install -c conda-forge diffpy.pdfgetx
-
-# 安装程序包
+# 安装 GUI 程序包
 pip install -e .
 ```
 

@@ -53,18 +53,38 @@ This is a complete optimization of the original PDFgetX3 GUI with:
 
 ## 🚀 Installation
 
-### Quick Install (Recommended)
+### Prerequisites
+
+**Important**: PDFgetX3 requires a free academic license from Columbia University.
+
+#### Step 1: Obtain PDFgetX3 License (Required)
+
+PDFgetX3 is available for free for academic research. Follow these steps:
+
+1. Visit the licensing page: [https://columbia.resoluteinnovation.com/technologies/M11-120](https://columbia.resoluteinnovation.com/technologies/M11-120)
+2. Select "Express Licensing" → "Sign In To Continue"
+3. After sign-in, search for "pdfgetx3" or "m11-120"
+4. Select "Express Licensing" again → Choose "PDFgetX3 and PDFgetN3, Free Academic"
+5. Submit the license request and wait for confirmation email
+6. Download from: [https://columbia.resoluteinnovation.com/downloads](https://columbia.resoluteinnovation.com/downloads)
+
+For non-academic use, contact [Columbia Technology Ventures](mailto:techtransfer@columbia.edu).
+
+**Official Documentation**: [https://www.diffpy.org/products/pdfgetx.html](https://www.diffpy.org/products/pdfgetx.html)
+
+#### Step 2: Install PDFgetX3
+
+After obtaining the license, install PDFgetX3 following the instructions provided in the download package.
+
+### Install GUI Application
 
 ```bash
 cd PDFgetX3GUI_v2
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Or use conda for diffpy.pdfgetx
-conda install -c conda-forge diffpy.pdfgetx
-
-# Install the package
+# Install the GUI package
 pip install -e .
 ```
 
