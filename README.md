@@ -232,9 +232,74 @@ MIT License - see LICENSE file for details
 
 ## 🙏 Acknowledgments
 
-- Original PDFgetX3 GUI by Kenneth P. Marshall
-- PDFgetX3 by Simon Billinge and Pavol Juhás
-- Optimizations and modernization by AI Assistant
+- Original PDFgetX3 GUI developed by Kenneth P. Marshall
+- PDFgetX3 developed by Simon Billinge and Pavol Juhás
+- **Optimization and modernization powered by [Google Gemini Antigravity](https://deepmind.google/technologies/gemini/)**
+
+### 🤖 Developed with Google Gemini Antigravity
+
+This project demonstrates the power of AI-assisted software development. The entire v2.0 optimization was accomplished through collaboration with **Google Gemini Antigravity**, Google's advanced AI coding assistant.
+
+#### How Antigravity Helped Build This Project
+
+**1. PyQt5 → PyQt6 Migration**
+- Analyzed all source files to identify PyQt5 dependencies
+- Systematically updated imports, API calls, and enum values
+- Ensured Qt6 compatibility across the entire codebase
+
+**2. Code Modernization**
+- Refactored monolithic code into clean MVC architecture
+- Added comprehensive type annotations throughout
+- Implemented proper error handling and logging
+- Created JSON-based configuration system
+
+**3. New Features Implementation**
+- **Lorch Modification**: Researched the algorithm, implemented the mathematical function, integrated into calculation pipeline
+- **Simplified Startup**: Created `setup.py` with proper entry points
+- **.chi Format Support**: Verified and documented file format compatibility
+
+**4. GitHub Deployment**
+- Initialized Git repository with proper `.gitignore`
+- Crafted meaningful commit messages
+- Created comprehensive bilingual documentation (English + Chinese)
+- Pushed to GitHub with complete version history
+
+**5. Documentation**
+- Generated detailed README files in two languages
+- Created implementation plans and walkthroughs
+- Corrected installation instructions based on official sources
+
+#### The Antigravity Workflow
+
+```mermaid
+graph LR
+    A[User Request] --> B[Antigravity Analysis]
+    B --> C[Code Planning]
+    C --> D[Implementation]
+    D --> E[Testing & Verification]
+    E --> F[Documentation]
+    F --> G[GitHub Deployment]
+    G --> H[Iteration & Refinement]
+```
+
+**Key Benefits**:
+- ✅ **Speed**: Complete migration and feature additions in hours, not days
+- ✅ **Quality**: Consistent code style, comprehensive error handling
+- ✅ **Documentation**: Bilingual README, detailed comments
+- ✅ **Best Practices**: Modern Python patterns, proper project structure
+
+#### Why Antigravity?
+
+[Google Gemini Antigravity](https://deepmind.google/technologies/gemini/) is not just a code generator—it's a true pair programming partner that:
+- Understands complex codebases and their architecture
+- Reasons about technical decisions and trade-offs
+- Maintains context across long development sessions
+- Generates production-quality code with proper testing
+- Creates comprehensive documentation automatically
+
+**This project is a testament to what's possible when human expertise meets advanced AI assistance.**
+
+---
 
 ## 📞 Support
 

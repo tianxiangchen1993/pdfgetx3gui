@@ -237,7 +237,72 @@ MIT License - 详见 LICENSE 文件
 
 - 原始 PDFgetX3 GUI 由 Kenneth P. Marshall 开发
 - PDFgetX3 由 Simon Billinge 和 Pavol Juhás 开发
-- 优化和现代化由 AI Assistant 完成
+- **优化和现代化由 [Google Gemini Antigravity](https://deepmind.google/technologies/gemini/) 提供支持**
+
+### 🤖 使用 Google Gemini Antigravity 开发
+
+本项目展示了 AI 辅助软件开发的强大能力。整个 v2.0 优化是通过与 **Google Gemini Antigravity**（Google 的高级 AI 编程助手）协作完成的。
+
+#### Antigravity 如何帮助构建这个项目
+
+**1. PyQt5 → PyQt6 迁移**
+- 分析所有源文件以识别 PyQt5 依赖项
+- 系统地更新导入、API 调用和枚举值
+- 确保整个代码库的 Qt6 兼容性
+
+**2. 代码现代化**
+- 将单体代码重构为清晰的 MVC 架构
+- 在整个项目中添加全面的类型注解
+- 实现适当的错误处理和日志记录
+- 创建基于 JSON 的配置系统
+
+**3. 新功能实现**
+- **Lorch 修正**：研究算法、实现数学函数、集成到计算流程
+- **简化启动**：创建带有适当入口点的 `setup.py`
+- **.chi 格式支持**：验证和记录文件格式兼容性
+
+**4. GitHub 部署**
+- 初始化 Git 仓库并配置适当的 `.gitignore`
+- 编写有意义的提交消息
+- 创建全面的双语文档（英文 + 中文）
+- 推送到 GitHub 并保留完整的版本历史
+
+**5. 文档编写**
+- 生成两种语言的详细 README 文件
+- 创建实施计划和操作指南
+- 根据官方资料更正安装说明
+
+#### Antigravity 工作流程
+
+```mermaid
+graph LR
+    A[用户需求] --> B[Antigravity 分析]
+    B --> C[代码规划]
+    C --> D[实现]
+    D --> E[测试与验证]
+    E --> F[文档]
+    F --> G[GitHub 部署]
+    G --> H[迭代与优化]
+```
+
+**主要优势**：
+- ✅ **速度**：几小时内完成完整迁移和功能添加，而不是几天
+- ✅ **质量**：一致的代码风格、全面的错误处理
+- ✅ **文档**：双语 README、详细注释
+- ✅ **最佳实践**：现代 Python 模式、适当的项目结构
+
+#### 为什么选择 Antigravity？
+
+[Google Gemini Antigravity](https://deepmind.google/technologies/gemini/) 不仅仅是代码生成器——它是真正的结对编程伙伴，能够：
+- 理解复杂的代码库及其架构
+- 对技术决策和权衡进行推理
+- 在长时间开发会话中保持上下文
+- 生成具有适当测试的生产质量代码
+- 自动创建全面的文档
+
+**这个项目证明了当人类专业知识与先进的 AI 辅助相结合时能够实现的可能性。**
+
+---
 
 ## 📞 支持
 
