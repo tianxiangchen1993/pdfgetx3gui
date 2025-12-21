@@ -192,6 +192,7 @@ class PlotWidget(QtWidgets.QWidget):
             if reset_axes and idx == 0:
                 ax.set_xlim(results.qi[0], results.qi[-1])
         
+        ax.set_xlabel('Q (Å⁻¹)', fontsize=11, fontweight='bold', color=colors['text'])
         ax.set_ylabel('I(Q)', fontsize=11, fontweight='bold', color=colors['text'])
         ax.legend(fontsize=9, loc='best', framealpha=0.9)
         ax.grid(True, alpha=0.3, linestyle=':', color=colors['grid'])
@@ -215,6 +216,7 @@ class PlotWidget(QtWidgets.QWidget):
         if is_multi:
             ax.legend(fontsize=9, loc='best', framealpha=0.9)
         
+        ax.set_xlabel('Q (Å⁻¹)', fontsize=11, fontweight='bold', color=colors['text'])
         ax.set_ylabel('S(Q)', fontsize=11, fontweight='bold', color=colors['text'])
         ax.grid(True, alpha=0.3, linestyle=':', color=colors['grid'])
     

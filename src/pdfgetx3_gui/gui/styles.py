@@ -117,6 +117,66 @@ QDoubleSpinBox:focus, QSpinBox:focus {
     border: 1px solid #2196F3;
 }
 
+/* SpinBox Up Button - 增加值 (绿色系) */
+QDoubleSpinBox::up-button, QSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 22px;
+    height: 16px;
+    border-left: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #f0f8f0, stop: 1 #e0f0e0);
+    border-top-right-radius: 3px;
+}
+
+QDoubleSpinBox::up-button:hover, QSpinBox::up-button:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #c8e6c8, stop: 1 #a8d6a8);
+}
+
+QDoubleSpinBox::up-button:pressed, QSpinBox::up-button:pressed {
+    background: #8bc48b;
+}
+
+QDoubleSpinBox::up-arrow, QSpinBox::up-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 6px solid #4CAF50;
+}
+
+/* SpinBox Down Button - 减少值 (红色系) */
+QDoubleSpinBox::down-button, QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 22px;
+    height: 16px;
+    border-left: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #fff0f0, stop: 1 #ffe0e0);
+    border-bottom-right-radius: 3px;
+}
+
+QDoubleSpinBox::down-button:hover, QSpinBox::down-button:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #ffcaca, stop: 1 #ffaaaa);
+}
+
+QDoubleSpinBox::down-button:pressed, QSpinBox::down-button:pressed {
+    background: #ff9090;
+}
+
+QDoubleSpinBox::down-arrow, QSpinBox::down-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #F44336;
+}
+
 /* Group Boxes */
 QGroupBox {
     font-weight: 600;

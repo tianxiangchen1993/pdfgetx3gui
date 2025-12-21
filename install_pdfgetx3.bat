@@ -1,0 +1,6 @@
+@echo off
+echo 激活pdfgetx3环境并安装依赖...
+call conda activate pdfgetx3
+call conda config --add channels conda-forge
+echo 安装diffpy.pdfgetx...
+call conda install diffpy.pdfgetx -y

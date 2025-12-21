@@ -31,9 +31,16 @@ class PDFResults:
     r: np.ndarray  # r values for G(r)
     gr: np.ndarray  # Pair distribution function G(r)
     
+    # Optional: Lorch-corrected data (if Lorch modification was applied)
+    fq_lorch: Optional[np.ndarray] = None  # Lorch-corrected F(Q)
+    gr_lorch: Optional[np.ndarray] = None  # Lorch-corrected G(r)
+    fq_orig: Optional[np.ndarray] = None  # Original F(Q) before Lorch
+    gr_orig: Optional[np.ndarray] = None  # Original G(r) before Lorch
+    
     def __repr__(self) -> str:
+        lorch_str = " (with Lorch)" if self.fq_lorch is not None else ""
         return (f"PDFResults(qi: {len(self.qi)} points, "
-                f"q: {len(self.q)} points, r: {len(self.r)} points)")
+                f"q: {len(self.q)} points, r: {len(self.r)} points){lorch_str}")
 
 
 class PDFCalculator:
@@ -257,7 +264,7 @@ class PDFCalculator:
             fq_modified
         )
         
-        # Create new results with modified values
+        # Create new results with modified values and save originals
         modified_results = PDFResults(
             qi=results.qi,
             iq=results.iq,
@@ -265,9 +272,14 @@ class PDFCalculator:
             bkg=results.bkg,
             q=results.q,
             sq=results.sq,
-            fq=fq_modified,
+            fq=fq_modified,  # This is the Lorch-corrected version
             r=results.r,
-            gr=gr_modified
+            gr=gr_modified,  # This is the Lorch-corrected version
+            # Store both original and Lorch-corrected versions
+            fq_orig=results.fq,  # Original F(Q) before Lorch
+            gr_orig=results.gr,  # Original G(r) before Lorch
+            fq_lorch=fq_modified,  # Lorch-corrected F(Q)
+            gr_lorch=gr_modified   # Lorch-corrected G(r)
         )
         
         logger.info("Lorch modification applied successfully")

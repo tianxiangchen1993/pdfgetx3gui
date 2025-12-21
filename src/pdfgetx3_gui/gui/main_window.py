@@ -247,6 +247,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.wavelength_spin.setSuffix(" Å")
         self.wavelength_spin.setEnabled(True)
         self.wavelength_spin.setMinimumWidth(120)
+        self.wavelength_spin.setToolTip("波长 / Wavelength\n↑ 绿色按钮：增加值 (Increase)\n↓ 红色按钮：减少值 (Decrease)")
         layout.addRow(tr('wavelength'), self.wavelength_spin)
         
         self.format_2theta.toggled.connect(self.wavelength_spin.setEnabled)
@@ -317,7 +318,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.current_files_list = QtWidgets.QListWidget()
         self.current_files_list.setMaximumHeight(150)
-        self.current_files_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.current_files_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
         layout.addRow(self.current_files_list)
         
         # File management buttons
@@ -347,7 +348,7 @@ class MainWindow(QtWidgets.QMainWindow):
         tab = QtWidgets.QWidget()
         layout = QtWidgets.QFormLayout(tab)
         layout.setLabelAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
-        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.ExpandingFieldsGrow)
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         
         # === Processing ===
         processing_section = QtWidgets.QLabel(f"<b>{tr('Processing')}</b>")
@@ -359,7 +360,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bkgscale_spin.setSingleStep(0.1)
         self.bkgscale_spin.setDecimals(3)
         self.bkgscale_spin.setMinimumWidth(120)
-        self.bkgscale_spin.setToolTip("Background scaling factor")
+        self.bkgscale_spin.setToolTip("背景缩放因子 / Background scaling factor\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
         layout.addRow(tr('bkg_scale'), self.bkgscale_spin)
         
         self.rpoly_spin = QtWidgets.QDoubleSpinBox()
@@ -368,7 +369,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.rpoly_spin.setSingleStep(0.1)
         self.rpoly_spin.setDecimals(2)
         self.rpoly_spin.setMinimumWidth(120)
-        self.rpoly_spin.setToolTip("Polynomial parameter for PDF termination ripples correction")
+        self.rpoly_spin.setToolTip("PDF截断波纹修正多项式参数\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
         layout.addRow(tr('rpoly'), self.rpoly_spin)
         
         # Lorch modification checkbox
@@ -387,24 +388,7 @@ class MainWindow(QtWidgets.QMainWindow):
         q_section = QtWidgets.QLabel(f"<b>{tr('group_q_params')}</b>")
         layout.addRow(q_section)
         
-        self.qmin_spin = QtWidgets.QDoubleSpinBox()
-        self.qmin_spin.setRange(0.01, 100.0)
-        self.qmin_spin.setValue(1.0)
-        self.qmin_spin.setSingleStep(0.1)
-        self.qmin_spin.setDecimals(2)
-        self.qmin_spin.setSuffix(" Å⁻¹")
-        self.qmin_spin.setMinimumWidth(120)
-        layout.addRow(tr('label_qmin'), self.qmin_spin)
-        
-        self.qmax_spin = QtWidgets.QDoubleSpinBox()
-        self.qmax_spin.setRange(1.0, 100.0)
-        self.qmax_spin.setValue(23.0)
-        self.qmax_spin.setSingleStep(0.1)
-        self.qmax_spin.setDecimals(2)
-        self.qmax_spin.setSuffix(" Å⁻¹")
-        self.qmax_spin.setMinimumWidth(120)
-        layout.addRow(tr('label_qmax'), self.qmax_spin)
-        
+        # Qmax(inst) first
         self.qmaxinst_spin = QtWidgets.QDoubleSpinBox()
         self.qmaxinst_spin.setRange(1.0, 100.0)
         self.qmaxinst_spin.setValue(23.0)
@@ -412,7 +396,30 @@ class MainWindow(QtWidgets.QMainWindow):
         self.qmaxinst_spin.setDecimals(2)
         self.qmaxinst_spin.setSuffix(" Å⁻¹")
         self.qmaxinst_spin.setMinimumWidth(120)
+        self.qmaxinst_spin.setToolTip("仪器Q最大值 / Instrument Q max\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
         layout.addRow(tr('label_qmax_inst'), self.qmaxinst_spin)
+        
+        # Then qmin
+        self.qmin_spin = QtWidgets.QDoubleSpinBox()
+        self.qmin_spin.setRange(0.01, 100.0)
+        self.qmin_spin.setValue(1.0)
+        self.qmin_spin.setSingleStep(0.1)
+        self.qmin_spin.setDecimals(2)
+        self.qmin_spin.setSuffix(" Å⁻¹")
+        self.qmin_spin.setMinimumWidth(120)
+        self.qmin_spin.setToolTip("Q最小值 / Q minimum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        layout.addRow(tr('label_qmin'), self.qmin_spin)
+        
+        # Then qmax
+        self.qmax_spin = QtWidgets.QDoubleSpinBox()
+        self.qmax_spin.setRange(1.0, 100.0)
+        self.qmax_spin.setValue(23.0)
+        self.qmax_spin.setSingleStep(0.1)
+        self.qmax_spin.setDecimals(2)
+        self.qmax_spin.setSuffix(" Å⁻¹")
+        self.qmax_spin.setMinimumWidth(120)
+        self.qmax_spin.setToolTip("Q最大值 / Q maximum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        layout.addRow(tr('label_qmax'), self.qmax_spin)
         
         layout.addRow(QtWidgets.QLabel(""))  # Spacer
         
@@ -427,6 +434,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.rmin_spin.setDecimals(2)
         self.rmin_spin.setSuffix(" Å")
         self.rmin_spin.setMinimumWidth(120)
+        self.rmin_spin.setToolTip("R最小值 / R minimum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
         layout.addRow(tr('label_rmin'), self.rmin_spin)
         
         self.rmax_spin = QtWidgets.QDoubleSpinBox()
@@ -436,6 +444,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.rmax_spin.setDecimals(1)
         self.rmax_spin.setSuffix(" Å")
         self.rmax_spin.setMinimumWidth(120)
+        self.rmax_spin.setToolTip("R最大值 / R maximum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
         layout.addRow(tr('label_rmax'), self.rmax_spin)
         
         self.rstep_spin = QtWidgets.QDoubleSpinBox()
@@ -445,6 +454,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.rstep_spin.setDecimals(3)
         self.rstep_spin.setSuffix(" Å")
         self.rstep_spin.setMinimumWidth(120)
+        self.rstep_spin.setToolTip("R步长 / R step\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
         layout.addRow(tr('label_rstep'), self.rstep_spin)
         
         layout.addRow(QtWidgets.QLabel(""))  # Spacer
@@ -550,7 +560,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.current_files_list.itemClicked.connect(self._on_current_file_clicked)
         
         # F5 shortcut
-        self.calc_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence("F5"), self)
+        self.calc_shortcut = QtGui.QShortcut(QtGui.QKeySequence("F5"), self)
         self.calc_shortcut.activated.connect(self._run_calculation)
         
         # Auto-update signals
@@ -1019,6 +1029,18 @@ class MainWindow(QtWidgets.QMainWindow):
         
         layout.addWidget(QtWidgets.QLabel(""))  # Spacer
         
+        # Lorch correction checkbox (only if Lorch is enabled)
+        lorch_check = QtWidgets.QCheckBox("保存Lorch修正后的F(Q)和G(r) / Save Lorch-corrected F(Q) and G(r)")
+        lorch_check.setChecked(True)
+        lorch_check.setEnabled(self.lorch_check.isChecked())  # Enable only if Lorch is applied
+        if self.lorch_check.isChecked():
+            lorch_check.setToolTip("保存Lorch修正后的数据 (*.fq_lorch, *.gr_lorch)")
+        else:
+            lorch_check.setToolTip("仅当启用Lorch修正时可用")
+        layout.addWidget(lorch_check)
+        
+        layout.addWidget(QtWidgets.QLabel(""))  # Spacer
+        
         # Config file checkbox
         cfg_check = QtWidgets.QCheckBox("Save configuration file (.cfg)")
         cfg_check.setChecked(True)
@@ -1026,7 +1048,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # Buttons
         button_box = QtWidgets.QDialogButtonBox(
-            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+            QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel
         )
         button_box.accepted.connect(dialog.accept)
         button_box.rejected.connect(dialog.reject)
@@ -1041,7 +1063,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self,
             "Select Save Directory",
             "",
-            QtWidgets.QFileDialog.ShowDirsOnly
+            QtWidgets.QFileDialog.Option.ShowDirsOnly
         )
         
         if not save_dir:
@@ -1051,49 +1073,77 @@ class MainWindow(QtWidgets.QMainWindow):
             from pathlib import Path
             import numpy as np
             
-            # Get base name for files
+            # Get base name for files and qmax value
             data_file = self.data_file_edit.text()
             if data_file:
                 base_name = Path(data_file).stem
             else:
                 base_name = "result"
+            
+            # Get qmax value for filename
+            qmax_value = self.qmax_spin.value()
+            # Create base filename with qmax
+            base_filename = f"{base_name}_qmax{qmax_value:.0f}"
+            
             results = self.current_results
             save_path = Path(save_dir)
             files_saved = []
             
             # Save I(Q) if selected and available
             if iq_check.isChecked() and hasattr(results, 'qi') and hasattr(results, 'iq'):
-                iq_file = save_path / f"{base_name}.iq"
+                iq_file = save_path / f"{base_filename}.iq"
                 data = np.column_stack([results.qi, results.iq])
                 np.savetxt(iq_file, data, header="Q(1/A)  I(Q)", fmt='%.6f', comments='# ')
                 files_saved.append(iq_file.name)
             
             # Save S(Q) if selected and available
             if sq_check.isChecked() and hasattr(results, 'q') and hasattr(results, 'sq'):
-                sq_file = save_path / f"{base_name}.sq"
+                sq_file = save_path / f"{base_filename}.sq"
                 data = np.column_stack([results.q, results.sq])
                 np.savetxt(sq_file, data, header="Q(1/A)  S(Q)", fmt='%.6f', comments='# ')
                 files_saved.append(sq_file.name)
             
             # Save F(Q) if selected and available
+            # If Lorch is enabled, save the ORIGINAL (uncorrected) F(Q)
             if fq_check.isChecked() and hasattr(results, 'q') and hasattr(results, 'fq'):
-                fq_file = save_path / f"{base_name}.fq"
-                data = np.column_stack([results.q, results.fq])
+                fq_file = save_path / f"{base_filename}.fq"
+                # Use fq_orig if Lorch was applied, otherwise use fq
+                fq_data = results.fq_orig if (hasattr(results, 'fq_orig') and results.fq_orig is not None) else results.fq
+                data = np.column_stack([results.q, fq_data])
                 np.savetxt(fq_file, data, header="Q(1/A)  F(Q)", fmt='%.6f', comments='# ')
                 files_saved.append(fq_file.name)
             
             # Save G(r) if selected and available
+            # If Lorch is enabled, save the ORIGINAL (uncorrected) G(r)
             if gr_check.isChecked() and hasattr(results, 'r') and hasattr(results, 'gr'):
-                gr_file = save_path / f"{base_name}.gr"
-                data = np.column_stack([results.r, results.gr])
+                gr_file = save_path / f"{base_filename}.gr"
+                # Use gr_orig if Lorch was applied, otherwise use gr
+                gr_data = results.gr_orig if (hasattr(results, 'gr_orig') and results.gr_orig is not None) else results.gr
+                data = np.column_stack([results.r, gr_data])
                 np.savetxt(gr_file, data, header="r(A)  G(r)", fmt='%.6f', comments='# ')
                 files_saved.append(gr_file.name)
             
             # Save config file if selected
             if cfg_check.isChecked():
-                cfg_file = save_path / f"{base_name}.cfg"
+                cfg_file = save_path / f"{base_filename}.cfg"
                 self._save_single_config_file(cfg_file, base_name, files_saved)
                 files_saved.append(cfg_file.name)
+            
+            # Save Lorch-corrected data if selected and available
+            if lorch_check.isChecked() and lorch_check.isEnabled():
+                # Save Lorch-corrected F(Q) if available (use .lorch before extension)
+                if hasattr(results, 'fq_lorch') and results.fq_lorch is not None:
+                    fq_lorch_file = save_path / f"{base_filename}.lorch.fq"
+                    data = np.column_stack([results.q, results.fq_lorch])
+                    np.savetxt(fq_lorch_file, data, header="Q(1/A)  F(Q)_Lorch-corrected", fmt='%.6f', comments='# ')
+                    files_saved.append(fq_lorch_file.name)
+                
+                # Save Lorch-corrected G(r) if available (use .lorch before extension)
+                if hasattr(results, 'gr_lorch') and results.gr_lorch is not None:
+                    gr_lorch_file = save_path / f"{base_filename}.lorch.gr"
+                    data = np.column_stack([results.r, results.gr_lorch])
+                    np.savetxt(gr_lorch_file, data, header="r(A)  G(r)_Lorch-corrected", fmt='%.6f', comments='# ')
+                    files_saved.append(gr_lorch_file.name)
             
             # Success message
             QtWidgets.QMessageBox.information(
