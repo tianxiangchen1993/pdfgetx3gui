@@ -1,321 +1,246 @@
-# PDFgetX3 GUI v2.0 - Optimized Version
+# PDFgetX3 GUI v2.0 - Modern PyQt6 Implementation
 
 English | [简体中文](README_CN.md)
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyQt6](https://img.shields.io/badge/PyQt-6.0+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**A modern, optimized GUI for PDFgetX3** with improved code quality, enhanced UI/UX, and better performance.
+**A modern, fully-functional GUI for PDFgetX3** with complete PyQt6 migration, enhanced UI/UX, and robust PDF analysis features.
 
-## 🎯 What's New in v2.0
+## 🎯 What's New in v2.0.1 (December 2024)
 
-This is a complete optimization of the original PDFgetX3 GUI with:
+### 🔧 Critical Fixes
+- ✅ **PyQt6 Compatibility**: Fixed all PyQt5→PyQt6 enum access issues (QAbstractItemView, QFormLayout, QDialogButtonBox, QFileDialog)
+- ✅ **Lorch Algorithm Bug**: **CRITICAL FIX** - Lorch-corrected and uncorrected files now save different data correctly
+- ✅ **Plot Display**: Added missing x-axis labels for I(Q) and S(Q) plots
+- ✅ **Module Migration**: Moved QShortcut from QtWidgets to QtGui for Qt6 compatibility
 
-### 🆕 Latest Updates
-- **PyQt6 Migration**: Fully migrated to PyQt6 for modern Qt 6 support
-- **Lorch Modification**: Built-in Lorch function to reduce PDF termination ripples
-- **Simplified Startup**: Easy installation with `pdfgetx3gui` command
-
-### ✨ Code Quality Improvements
-- **MVC Architecture**: Clean separation of UI, business logic, and data
-- **Type Annotations**: Full Python type hints for better IDE support
-- **Modern Python**: Dataclasses, pathlib, and Python 3.8+ features
-- **Comprehensive Logging**: Detailed logging for debugging
-- **JSON Configuration**: Human-readable JSON instead of text files
-- **Proper Error Handling**: Meaningful error messages
-
-### 🎨 UI/UX Enhancements
-- Cleaner, more organized interface
-- Better visual feedback
-- Improved tooltips and help text
-- Keyboard shortcuts
-- Modern styling
-
-### ⚡ Performance Optimizations
-- Optimized resampling algorithms
-- Efficient data handling
-- Faster plot updates
-
-### 🧪 Testing & Quality
-- Unit tests with pytest
-- Type checking with mypy
-- Code formatting with black
-- >80% code coverage target
+### ✨ New Features
+- 🎨 **Enhanced SpinBox UI**: Color-coded up/down buttons (green ↑ increase, red ↓ decrease) with tooltips
+- 📁 **Smart File Naming**: New convention `{sample}_qmax{value}.lorch.{extension}` for better data organization
+- 📊 **Lorch Data Export**: Separate export for original and Lorch-corrected F(Q) and G(r) data
 
 ## 📋 Requirements
 
 - Python 3.8 or higher
-- PDFgetX3 ([diffpy.pdfgetx](https://www.diffpy.org/products/pdfgetx.html))
 - **PyQt6** >= 6.0.0 (Qt 6 framework)
-- matplotlib >= 3.5.0 (Qt6 support required)
+- PDFgetX3 ([diffpy.pdfgetx](https://www.diffpy.org/products/pdfgetx.html))
+- matplotlib >= 3.5.0 (with Qt6 backend support)
 - NumPy >= 1.19.0
 - SciPy >= 1.5.0
 
-## 🚀 Installation
+## 🚀 Quick Start
 
-### Prerequisites
+### 1. Install PDFgetX3 (Required)
 
-**Important**: PDFgetX3 requires a free academic license from Columbia University.
+PDFgetX3 requires a free academic license from Columbia University:
 
-#### Step 1: Obtain PDFgetX3 License (Required)
+1. Visit: [https://columbia.resoluteinnovation.com/technologies/M11-120](https://columbia.resoluteinnovation.com/technologies/M11-120)
+2. Sign up for academic license (free for research use)
+3. Download and install following the provided instructions
 
-PDFgetX3 is available for free for academic research. Follow these steps:
+**Documentation**: [https://www.diffpy.org/products/pdfgetx.html](https://www.diffpy.org/products/pdfgetx.html)
 
-1. Visit the licensing page: [https://columbia.resoluteinnovation.com/technologies/M11-120](https://columbia.resoluteinnovation.com/technologies/M11-120)
-2. Select "Express Licensing" → "Sign In To Continue"
-3. After sign-in, search for "pdfgetx3" or "m11-120"
-4. Select "Express Licensing" again → Choose "PDFgetX3 and PDFgetN3, Free Academic"
-5. Submit the license request and wait for confirmation email
-6. Download from: [https://columbia.resoluteinnovation.com/downloads](https://columbia.resoluteinnovation.com/downloads)
-
-For non-academic use, contact [Columbia Technology Ventures](mailto:techtransfer@columbia.edu).
-
-**Official Documentation**: [https://www.diffpy.org/products/pdfgetx.html](https://www.diffpy.org/products/pdfgetx.html)
-
-#### Step 2: Install PDFgetX3
-
-After obtaining the license, install PDFgetX3 following the instructions provided in the download package.
-
-### Install GUI Application
+### 2. Install GUI
 
 ```bash
-cd PDFgetX3GUI_v2
+# Clone repository
+git clone https://github.com/tianxiangchen1993/pdfgetx3gui.git
+cd pdfgetx3gui
 
-# Install Python dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# Install the GUI package
+# Install package
 pip install -e .
 ```
 
-**After installation, launch with:**
-```bash
-pdfgetx3gui
-# or
-pdfgetx3gui-v2
-```
-
-## 💻 Usage
-
-### Run the GUI
+### 3. Launch
 
 ```bash
-pdfgetx3gui
-# or
 pdfgetx3gui-v2
+# or simply
+pdfgetx3gui
 ```
 
-### Python API
+## 💻 Usage Guide
 
-```python
-from pdfgetx3_gui import PDFCalculator, PDFParameters
+### Basic Workflow
 
-# Configure parameters
-params = PDFParameters(
-    qmin=1.0,
-    qmax=25.0,
-    composition="LaB6"
-)
+1. **Load Data**: Select your diffraction data file (.xy, .chi, or 2θ format)
+2. **Set Parameters**: 
+   - Qmax(inst): Instrument Q maximum
+   - Qmin/Qmax: Analysis range
+   - Composition: Sample chemical formula
+3. **Optional**: Enable Lorch modification to reduce PDF termination ripples
+4. **Calculate**: Press F5 or click Calculate button
+5. **Review**: Check I(Q), S(Q), F(Q), and G(r) plots
+6. **Save**: Export results with smart file naming
 
-# Calculate PDF
-calculator = PDFCalculator()
-results = calculator.calculate(
-    params=params,
-    file="path/to/data.xy"
-)
+### File Naming Convention
 
-# Access results
-print(f"G(r): {len(results.gr)} points")
-```
+**Without Lorch**:
+- `sample_qmax20.iq`, `.sq`, `.fq`, `.gr`
 
-## 📖 Features
+**With Lorch enabled**:
+- `sample_qmax20.fq` - Original F(Q)
+- `sample_qmax20.gr` - Original G(r)
+- `sample_qmax20.lorch.fq` - Lorch-corrected F(Q)
+- `sample_qmax20.lorch.gr` - Lorch-corrected G(r)
+
+### Lorch Modification
+
+The Lorch function `M(Q) = sinc(Q/Qmax)` smoothly damps F(Q) near Qmax, reducing spurious oscillations in G(r):
+
+- **Enable**: Check "Apply Lorch Modification" in Parameters tab
+- **Effect**: Reduces termination ripples while preserving peak positions
+- **Output**: Both original and Lorch-corrected data can be saved separately
+
+## ✨ Key Features
 
 ### Data Input
-- Support for multiple formats (Q, 2θ)
+- Multiple format support (Q-space, 2θ-space)
+- Background file subtraction
 - File history and quick access
-- Background file management
-- Drag & drop support (coming soon)
+- Smart parameter validation
 
 ### Parameter Control
-- Real-time parameter adjustment
-- Parameter presets
-- Automatic validation
-- Step size control
+- Color-coded SpinBox controls with visual feedback
+- Real-time validation
+- Parameter presets support
+- Comprehensive tooltips (bilingual)
 
 ### Data Processing
-- Multiple resampling modes (linear, exponential)
-- Background subtraction
 - Composition-based corrections
-- **Lorch Modification**: Reduce PDF termination ripples with built-in Lorch function
+- Background scaling
+- Polynomial termination ripple correction
+- **Lorch modification** for PDF quality improvement
 
 ### Visualization
-- I(Q), S(Q), F(Q), G(r) plots
-- Interactive plotting
-- Multiple plots comparison
-- Export plots (coming soon)
+- Real-time plot updates
+- Multiple simultaneous plots (I(Q), S(Q), F(Q), G(r))
+- Modern matplotlib styling
+- Interactive zoom and pan
 
 ### Data Export
-- Individual file saving
-- Batch directory processing
-- Multiple output formats
-
-### Configuration
-- Automatic settings persistence
-- Import/export configurations
-- Multiple configuration profiles (coming soon)
+- Smart file naming with qmax values
+- Separate original and Lorch-corrected outputs
+- Configuration file (.cfg) export
+- Batch processing support
 
 ## 🏗️ Architecture
 
 ```
-pdfgetx3_gui_v2/
+pdfgetx3gui/
 ├── src/pdfgetx3_gui/
-│   ├── config/          # Settings and configuration
+│   ├── config/          # Settings management
+│   │   └── settings.py  # PDFParameters dataclass
 │   ├── core/            # Calculation engine
+│   │   └── calculator.py # PDFCalculator with Lorch support
 │   ├── gui/             # User interface
-│   ├── workers/         # Background threads
+│   │   ├── main_window.py # Main application window
+│   │   └── styles.py    # Modern UI styling
 │   ├── plotting/        # Visualization
-│   └── utils/           # Utilities
+│   │   └── plot_widget.py # Enhanced matplotlib plots
+│   └── utils/           # Logging and utilities
 ├── tests/               # Test suite
-├── examples/            # Example scripts
+├── examples/            # Example data and outputs
 └── docs/                # Documentation
 ```
 
 ## 🔧 Development
 
-### Run Tests
+### Run from Source
 
 ```bash
-pytest
+cd pdfgetx3gui
+python -m pdfgetx3_gui.main
 ```
 
-### Type Checking
+### Code Quality
 
 ```bash
+# Type checking
 mypy src/pdfgetx3_gui
+
+# Code formatting  
+black src/pdfgetx3_gui
+
+# Run tests
+pytest tests/
 ```
 
-### Code Formatting
+## 📊 PyQt6 Migration Details
 
-```bash
-black src/pdfgetx3_gui tests
-```
+| Component | PyQt5 API | PyQt6 API (Fixed) |
+|-----------|-----------|-------------------|
+| Selection Mode | `QAbstractItemView.ExtendedSelection` | `QAbstractItemView.SelectionMode.ExtendedSelection` |
+| Field Growth | `QFormLayout.ExpandingFieldsGrow` | `QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow` |
+| Dialog Buttons | `QDialogButtonBox.Ok` | `QDialogButtonBox.StandardButton.Ok` |
+| File Dialog | `QFileDialog.ShowDirsOnly` | `QFileDialog.Option.ShowDirsOnly` |
+| Shortcuts | `QtWidgets.QShortcut` | `QtGui.QShortcut` |
 
-## 📊 Comparison with v1.0
+## 🐛 Known Issues & Fixes
 
-| Feature | v1.0 | v2.0 |
-|---------|------|------|
-| **Code Lines (main)** | 1368 lines single file | ~500 lines modular |
-| **GUI Framework** | PyQt5 | ✅ **PyQt6** (Qt 6) |
-| **Type Annotations** | ❌ | ✅ Full |
-| **Configuration** | Text files | JSON |
-| **Testing** | ❌ | ✅ Pytest |
-| **Architecture** | Monolithic | MVC Pattern |
-| **Error Handling** | Basic | Comprehensive |
-| **Logging** | Print statements | Proper logging |
-| **Documentation** | Minimal | Extensive |
-| **Startup Command** | python -m ... | ✅ **pdfgetx3gui** |
-| **Lorch Modification** | ❌ | ✅ **Built-in** |
+### Fixed in v2.0.1
+- ✅ Lorch-corrected files were identical to uncorrected files (CRITICAL)
+- ✅ Missing x-axis labels on I(Q) and S(Q) plots
+- ✅ PyQt6 enum AttributeErrors on startup
+- ✅ QShortcut module import error
+
+### Current Limitations
+- Drag & drop file support (planned)
+- Plot export to image files (planned)
+- Multiple configuration profiles (planned)
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+Contributions welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch
-3. Add tests for new features
-4. Ensure all tests pass
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📝 License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-- Original PDFgetX3 GUI developed by Kenneth P. Marshall
-- PDFgetX3 developed by Simon Billinge and Pavol Juhás
-- **Optimization and modernization powered by [Google Gemini Antigravity](https://deepmind.google/technologies/gemini/)**
+- **Original PDFgetX3 GUI**: Kenneth P. Marshall
+- **PDFgetX3 Algorithm**: Simon Billinge and Pavol Juhás (Columbia University)
+- **Development**: Powered by [Google Gemini](https://deepmind.google/technologies/gemini/)
 
-### 🤖 Developed with Google Gemini Antigravity
+### 🤖 AI-Assisted Development
 
-This project demonstrates the power of AI-assisted software development. The entire v2.0 optimization was accomplished through collaboration with **Google Gemini Antigravity**, Google's advanced AI coding assistant.
+This project demonstrates modern AI-assisted software engineering. The v2.0 optimization was accomplished through collaboration with **Google Gemini 2.0**, featuring:
 
-#### How Antigravity Helped Build This Project
+- Complete PyQt5 → PyQt6 migration with API compatibility fixes
+- Implementation of Lorch modification algorithm
+- Modern Python architecture (MVC pattern, type hints, dataclasses)
+- Comprehensive bilingual documentation
+- Critical bug detection and resolution
 
-**1. PyQt5 → PyQt6 Migration**
-- Analyzed all source files to identify PyQt5 dependencies
-- Systematically updated imports, API calls, and enum values
-- Ensured Qt6 compatibility across the entire codebase
-
-**2. Code Modernization**
-- Refactored monolithic code into clean MVC architecture
-- Added comprehensive type annotations throughout
-- Implemented proper error handling and logging
-- Created JSON-based configuration system
-
-**3. New Features Implementation**
-- **Lorch Modification**: Researched the algorithm, implemented the mathematical function, integrated into calculation pipeline
-- **Simplified Startup**: Created `setup.py` with proper entry points
-- **.chi Format Support**: Verified and documented file format compatibility
-
-**4. GitHub Deployment**
-- Initialized Git repository with proper `.gitignore`
-- Crafted meaningful commit messages
-- Created comprehensive bilingual documentation (English + Chinese)
-- Pushed to GitHub with complete version history
-
-**5. Documentation**
-- Generated detailed README files in two languages
-- Created implementation plans and walkthroughs
-- Corrected installation instructions based on official sources
-
-#### The Antigravity Workflow
-
-```mermaid
-graph LR
-    A[User Request] --> B[Antigravity Analysis]
-    B --> C[Code Planning]
-    C --> D[Implementation]
-    D --> E[Testing & Verification]
-    E --> F[Documentation]
-    F --> G[GitHub Deployment]
-    G --> H[Iteration & Refinement]
-```
-
-**Key Benefits**:
-- ✅ **Speed**: Complete migration and feature additions in hours, not days
-- ✅ **Quality**: Consistent code style, comprehensive error handling
-- ✅ **Documentation**: Bilingual README, detailed comments
-- ✅ **Best Practices**: Modern Python patterns, proper project structure
-
-#### Why Antigravity?
-
-[Google Gemini Antigravity](https://deepmind.google/technologies/gemini/) is not just a code generator—it's a true pair programming partner that:
-- Understands complex codebases and their architecture
-- Reasons about technical decisions and trade-offs
-- Maintains context across long development sessions
-- Generates production-quality code with proper testing
-- Creates comprehensive documentation automatically
-
-**This project is a testament to what's possible when human expertise meets advanced AI assistance.**
-
----
+**Production-ready code, delivered at unprecedented speed.**
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/msujas/pdfgetx3_gui/issues)
-- **Original Project**: [pdfgetx3_gui v1.0](https://github.com/msujas/pdfgetx3_gui)
-- **PDFgetX3**: [DiffPy Documentation](https://www.diffpy.org/products/pdfgetx.html)
+- **Repository**: [https://github.com/tianxiangchen1993/pdfgetx3gui](https://github.com/tianxiangchen1993/pdfgetx3gui)
+- **Issues**: [GitHub Issues](https://github.com/tianxiangchen1993/pdfgetx3gui/issues)
+- **PDFgetX3 Docs**: [https://www.diffpy.org/products/pdfgetx.html](https://www.diffpy.org/products/pdfgetx.html)
 
 ## 🗺️ Roadmap
 
-- [ ] Web interface version
-- [ ] Plugin system
+- [ ] Drag & drop file loading
+- [ ] Plot export (PNG, SVG, PDF)
+- [ ] Multiple dataset comparison
 - [ ] Advanced fitting tools
-- [ ] Database integration for results
-- [ ] Automated workflows
-- [ ] Cloud processing support
+- [ ] Configuration profiles management
+- [ ] Plugin system for custom processing
 
 ---
 
-**Note**: This is an optimized version created alongside the original project. Both versions are maintained for different use cases.
+**Last Updated**: December 2024 | **Version**: 2.0.1
