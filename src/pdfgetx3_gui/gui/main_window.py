@@ -17,6 +17,47 @@ from ..utils.i18n import get_translator, tr, set_language
 logger = get_logger(__name__)
 
 
+class FreeNumberEdit(QtWidgets.QLineEdit):
+    valueChanged = QtCore.pyqtSignal(float)
+
+    def __init__(self):
+        super().__init__()
+        self._decimals = 6
+        self.textEdited.connect(self._emit_value_changed)
+
+    def setRange(self, _minimum: float, _maximum: float) -> None:
+        pass
+
+    def setSingleStep(self, _step: float) -> None:
+        pass
+
+    def setDecimals(self, decimals: int) -> None:
+        self._decimals = decimals
+
+    def setSuffix(self, suffix: str) -> None:
+        self.setPlaceholderText(suffix.strip())
+
+    def setValue(self, value: float) -> None:
+        self.setText(f"{float(value):.{self._decimals}f}".rstrip("0").rstrip("."))
+        self.valueChanged.emit(float(value))
+
+    def value(self) -> float:
+        text = self.text().strip()
+        if not text:
+            raise ValueError("参数不能为空")
+        try:
+            return float(text)
+        except ValueError as exc:
+            raise ValueError(f"参数必须是数字：{text}") from exc
+
+    def _emit_value_changed(self) -> None:
+        try:
+            value = self.value()
+        except ValueError:
+            return
+        self.valueChanged.emit(value)
+
+
 class MainWindow(QtWidgets.QMainWindow):
     """
     Main application window with improved design.
@@ -239,7 +280,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         layout.addRow(tr('data_format'), format_layout)
         
-        self.wavelength_spin = QtWidgets.QDoubleSpinBox()
+        self.wavelength_spin = FreeNumberEdit()
         self.wavelength_spin.setRange(0.01, 10.0)
         self.wavelength_spin.setValue(0.270793)
         self.wavelength_spin.setSingleStep(0.001)
@@ -247,7 +288,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.wavelength_spin.setSuffix(" Å")
         self.wavelength_spin.setEnabled(True)
         self.wavelength_spin.setMinimumWidth(120)
-        self.wavelength_spin.setToolTip("波长 / Wavelength\n↑ 绿色按钮：增加值 (Increase)\n↓ 红色按钮：减少值 (Decrease)")
+        self.wavelength_spin.setToolTip("波长 / Wavelength")
         layout.addRow(tr('wavelength'), self.wavelength_spin)
         
         self.format_2theta.toggled.connect(self.wavelength_spin.setEnabled)
@@ -354,22 +395,22 @@ class MainWindow(QtWidgets.QMainWindow):
         processing_section = QtWidgets.QLabel(f"<b>{tr('Processing')}</b>")
         layout.addRow(processing_section)
         
-        self.bkgscale_spin = QtWidgets.QDoubleSpinBox()
+        self.bkgscale_spin = FreeNumberEdit()
         self.bkgscale_spin.setRange(0.0, 10.0)
         self.bkgscale_spin.setValue(1.0)
         self.bkgscale_spin.setSingleStep(0.1)
         self.bkgscale_spin.setDecimals(3)
         self.bkgscale_spin.setMinimumWidth(120)
-        self.bkgscale_spin.setToolTip("背景缩放因子 / Background scaling factor\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.bkgscale_spin.setToolTip("背景缩放因子 / Background scaling factor")
         layout.addRow(tr('bkg_scale'), self.bkgscale_spin)
         
-        self.rpoly_spin = QtWidgets.QDoubleSpinBox()
+        self.rpoly_spin = FreeNumberEdit()
         self.rpoly_spin.setRange(0.0, 3.0)
         self.rpoly_spin.setValue(1.0)
         self.rpoly_spin.setSingleStep(0.1)
         self.rpoly_spin.setDecimals(2)
         self.rpoly_spin.setMinimumWidth(120)
-        self.rpoly_spin.setToolTip("PDF截断波纹修正多项式参数\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rpoly_spin.setToolTip("PDF截断波纹修正多项式参数")
         layout.addRow(tr('rpoly'), self.rpoly_spin)
         
         # Lorch modification checkbox
@@ -389,36 +430,36 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addRow(q_section)
         
         # Qmax(inst) first
-        self.qmaxinst_spin = QtWidgets.QDoubleSpinBox()
+        self.qmaxinst_spin = FreeNumberEdit()
         self.qmaxinst_spin.setRange(1.0, 100.0)
         self.qmaxinst_spin.setValue(23.0)
         self.qmaxinst_spin.setSingleStep(0.1)
         self.qmaxinst_spin.setDecimals(2)
         self.qmaxinst_spin.setSuffix(" Å⁻¹")
         self.qmaxinst_spin.setMinimumWidth(120)
-        self.qmaxinst_spin.setToolTip("仪器Q最大值 / Instrument Q max\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.qmaxinst_spin.setToolTip("仪器Q最大值 / Instrument Q max")
         layout.addRow(tr('label_qmax_inst'), self.qmaxinst_spin)
         
         # Then qmin
-        self.qmin_spin = QtWidgets.QDoubleSpinBox()
+        self.qmin_spin = FreeNumberEdit()
         self.qmin_spin.setRange(0.01, 100.0)
         self.qmin_spin.setValue(1.0)
         self.qmin_spin.setSingleStep(0.1)
         self.qmin_spin.setDecimals(2)
         self.qmin_spin.setSuffix(" Å⁻¹")
         self.qmin_spin.setMinimumWidth(120)
-        self.qmin_spin.setToolTip("Q最小值 / Q minimum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.qmin_spin.setToolTip("Q最小值 / Q minimum")
         layout.addRow(tr('label_qmin'), self.qmin_spin)
         
         # Then qmax
-        self.qmax_spin = QtWidgets.QDoubleSpinBox()
+        self.qmax_spin = FreeNumberEdit()
         self.qmax_spin.setRange(1.0, 100.0)
         self.qmax_spin.setValue(23.0)
         self.qmax_spin.setSingleStep(0.1)
         self.qmax_spin.setDecimals(2)
         self.qmax_spin.setSuffix(" Å⁻¹")
         self.qmax_spin.setMinimumWidth(120)
-        self.qmax_spin.setToolTip("Q最大值 / Q maximum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.qmax_spin.setToolTip("Q最大值 / Q maximum")
         layout.addRow(tr('label_qmax'), self.qmax_spin)
         
         layout.addRow(QtWidgets.QLabel(""))  # Spacer
@@ -427,34 +468,34 @@ class MainWindow(QtWidgets.QMainWindow):
         r_section = QtWidgets.QLabel(f"<b>{tr('group_r_params')}</b>")
         layout.addRow(r_section)
         
-        self.rmin_spin = QtWidgets.QDoubleSpinBox()
+        self.rmin_spin = FreeNumberEdit()
         self.rmin_spin.setRange(0.01, 100.0)
         self.rmin_spin.setValue(0.5)
         self.rmin_spin.setSingleStep(0.1)
         self.rmin_spin.setDecimals(2)
         self.rmin_spin.setSuffix(" Å")
         self.rmin_spin.setMinimumWidth(120)
-        self.rmin_spin.setToolTip("R最小值 / R minimum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rmin_spin.setToolTip("R最小值 / R minimum")
         layout.addRow(tr('label_rmin'), self.rmin_spin)
         
-        self.rmax_spin = QtWidgets.QDoubleSpinBox()
+        self.rmax_spin = FreeNumberEdit()
         self.rmax_spin.setRange(1.0, 10000.0)
         self.rmax_spin.setValue(30.0)
         self.rmax_spin.setSingleStep(1.0)
         self.rmax_spin.setDecimals(1)
         self.rmax_spin.setSuffix(" Å")
         self.rmax_spin.setMinimumWidth(120)
-        self.rmax_spin.setToolTip("R最大值 / R maximum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rmax_spin.setToolTip("R最大值 / R maximum")
         layout.addRow(tr('label_rmax'), self.rmax_spin)
         
-        self.rstep_spin = QtWidgets.QDoubleSpinBox()
+        self.rstep_spin = FreeNumberEdit()
         self.rstep_spin.setRange(0.001, 1.0)
         self.rstep_spin.setValue(0.01)
         self.rstep_spin.setSingleStep(0.001)
         self.rstep_spin.setDecimals(3)
         self.rstep_spin.setSuffix(" Å")
         self.rstep_spin.setMinimumWidth(120)
-        self.rstep_spin.setToolTip("R步长 / R step\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rstep_spin.setToolTip("R步长 / R step")
         layout.addRow(tr('label_rstep'), self.rstep_spin)
         
         layout.addRow(QtWidgets.QLabel(""))  # Spacer
@@ -761,7 +802,11 @@ class MainWindow(QtWidgets.QMainWindow):
         """Run PDF calculation (single or batch)."""
         from ..workers import CalculationWorker, MultiCalculationWorker
         
-        params = self._get_parameters()
+        try:
+            params = self._get_parameters()
+        except ValueError as exc:
+            QtWidgets.QMessageBox.warning(self, "参数错误", str(exc))
+            return
         bkg_file = self.bkg_file_edit.text() if self.bkg_file_edit.text() else None
         
         # Check for selected files in list

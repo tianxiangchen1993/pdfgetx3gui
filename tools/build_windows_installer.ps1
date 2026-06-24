@@ -8,12 +8,13 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $DistRoot = Join-Path $RepoRoot "dist"
 $ReleaseName = "PDFgetX3GUI-v$Version-win-installer"
-$ReleaseDir = Join-Path $DistRoot $ReleaseName
+$BuildRoot = Join-Path $DistRoot "_installer_build"
+$ReleaseDir = Join-Path $BuildRoot $ReleaseName
 $WheelsDir = Join-Path $ReleaseDir "wheels"
 $ZipPath = Join-Path $DistRoot "$ReleaseName.zip"
 
-if (Test-Path $ReleaseDir) {
-    Remove-Item -LiteralPath $ReleaseDir -Recurse -Force
+if (Test-Path $BuildRoot) {
+    Remove-Item -LiteralPath $BuildRoot -Recurse -Force
 }
 New-Item -ItemType Directory -Force -Path $WheelsDir | Out-Null
 
