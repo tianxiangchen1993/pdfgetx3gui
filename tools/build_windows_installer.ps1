@@ -78,7 +78,20 @@ if errorlevel 1 (
     exit /b 1
 )
 
-python -m pip install --no-index --find-links "%~dp0wheels" --upgrade pdfgetx3gui-v2==$Version
+python -m pip show pdfgetx3gui-v2 >nul 2>nul
+if not errorlevel 1 (
+    echo Existing PDFgetX3GUI installation found. Uninstalling old version...
+    python -m pip uninstall -y pdfgetx3gui-v2
+    if errorlevel 1 (
+        echo ERROR: Could not uninstall existing PDFgetX3GUI.
+        pause
+        exit /b 1
+    )
+) else (
+    echo No existing PDFgetX3GUI installation found.
+)
+
+python -m pip install --no-index --find-links "%~dp0wheels" --force-reinstall pdfgetx3gui-v2==$Version
 if errorlevel 1 (
     echo ERROR: PDFgetX3GUI installation failed.
     pause
@@ -127,7 +140,9 @@ Prerequisite:
 
 Install:
 1. Double-click install_pdfgetx3gui.bat.
-2. Wait for the import check to print "PDFgetX3GUI import check OK".
+2. The installer checks for an older PDFgetX3GUI, uninstalls it if present,
+   then installs the bundled version.
+3. Wait for the import check to print "PDFgetX3GUI import check OK".
 
 Run:
 - Double-click launch_pdfgetx3gui.bat.
