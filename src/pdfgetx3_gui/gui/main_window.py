@@ -23,7 +23,7 @@ class FreeNumberEdit(QtWidgets.QLineEdit):
     def __init__(self):
         super().__init__()
         self._decimals = 6
-        self.textEdited.connect(self._emit_value_changed)
+        self.editingFinished.connect(self._emit_value_changed)
 
     def setRange(self, _minimum: float, _maximum: float) -> None:
         pass
