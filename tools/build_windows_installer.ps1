@@ -138,6 +138,9 @@ Notes:
   powershell -ExecutionPolicy Bypass -File tools\build_windows_installer.ps1 -EnvName YOUR_ENV_NAME
 "@ | Set-Content -Path (Join-Path $ReleaseDir "README_INSTALL.txt") -Encoding UTF8
 
+Get-ChildItem -Path $DistRoot -Filter "*.png" -File -ErrorAction SilentlyContinue |
+    Copy-Item -Destination $ReleaseDir -Force
+
 Compress-Archive -LiteralPath $ReleaseDir -DestinationPath $ZipPath -Force
 
 Write-Host "Installer folder: $ReleaseDir"

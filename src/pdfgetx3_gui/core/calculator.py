@@ -329,6 +329,6 @@ class PDFCalculator:
             # Integrand: Q * F(Q) * sin(Qr)
             integrand = q * fq * np.sin(q * r_val)
             # Integrate and apply prefactor
-            gr[i] = (2.0 / np.pi) * np.trapz(integrand, q)
+            gr[i] = (2.0 / np.pi) * np.trapezoid(integrand, q)
         
         return gr
