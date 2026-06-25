@@ -32,6 +32,9 @@ setup(
     # Package configuration
     package_dir={"": "src"},
     packages=find_packages(where="src"),
+    package_data={
+        "pdfgetx3_gui": ["gui/resources/*.png"],
+    },
     
     # Dependencies
     install_requires=requirements,

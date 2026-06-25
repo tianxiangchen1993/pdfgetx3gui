@@ -17,6 +17,47 @@ from ..utils.i18n import get_translator, tr, set_language
 logger = get_logger(__name__)
 
 
+class FreeNumberEdit(QtWidgets.QLineEdit):
+    valueChanged = QtCore.pyqtSignal(float)
+
+    def __init__(self):
+        super().__init__()
+        self._decimals = 6
+        self.editingFinished.connect(self._emit_value_changed)
+
+    def setRange(self, _minimum: float, _maximum: float) -> None:
+        pass
+
+    def setSingleStep(self, _step: float) -> None:
+        pass
+
+    def setDecimals(self, decimals: int) -> None:
+        self._decimals = decimals
+
+    def setSuffix(self, suffix: str) -> None:
+        self.setPlaceholderText(suffix.strip())
+
+    def setValue(self, value: float) -> None:
+        self.setText(f"{float(value):.{self._decimals}f}".rstrip("0").rstrip("."))
+        self.valueChanged.emit(float(value))
+
+    def value(self) -> float:
+        text = self.text().strip()
+        if not text:
+            raise ValueError("参数不能为空")
+        try:
+            return float(text)
+        except ValueError as exc:
+            raise ValueError(f"参数必须是数字：{text}") from exc
+
+    def _emit_value_changed(self) -> None:
+        try:
+            value = self.value()
+        except ValueError:
+            return
+        self.valueChanged.emit(value)
+
+
 class MainWindow(QtWidgets.QMainWindow):
     """
     Main application window with improved design.
@@ -40,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.calculator = PDFCalculator()
         self.current_results = None
         self.translator = get_translator()
+        self._syncing_qmax = False
         
         # Load saved settings
         self.settings.load()
@@ -239,7 +281,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         layout.addRow(tr('data_format'), format_layout)
         
-        self.wavelength_spin = QtWidgets.QDoubleSpinBox()
+        self.wavelength_spin = FreeNumberEdit()
         self.wavelength_spin.setRange(0.01, 10.0)
         self.wavelength_spin.setValue(0.270793)
         self.wavelength_spin.setSingleStep(0.001)
@@ -247,14 +289,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.wavelength_spin.setSuffix(" Å")
         self.wavelength_spin.setEnabled(True)
         self.wavelength_spin.setMinimumWidth(120)
-        self.wavelength_spin.setToolTip("波长 / Wavelength\n↑ 绿色按钮：增加值 (Increase)\n↓ 红色按钮：减少值 (Decrease)")
+        self.wavelength_spin.setToolTip(
+            "波长 / Wavelength\n"
+            "入射 X 射线波长，用于把 2θ 角度转换为散射矢量 Q。\n"
+            "同步辐射高能 XRD 常见范围约 0.1-0.5 Å。"
+        )
         layout.addRow(tr('wavelength'), self.wavelength_spin)
         
         self.format_2theta.toggled.connect(self.wavelength_spin.setEnabled)
         
         # Composition (SECOND)
         self.composition_edit = QtWidgets.QLineEdit("LaB6")
-        self.composition_edit.setToolTip("Chemical composition (e.g., LaB6, Si, SiO2)")
+        self.composition_edit.setToolTip(
+            "化学式 / Composition\n"
+            "样品的元素组成，用于计算原子散射因子和归一化强度。\n"
+            "例如 LaB6、Si、SiO2。"
+        )
         self.composition_edit.setMinimumWidth(150)
         layout.addRow(tr('label_composition'), self.composition_edit)
         
@@ -354,22 +404,30 @@ class MainWindow(QtWidgets.QMainWindow):
         processing_section = QtWidgets.QLabel(f"<b>{tr('Processing')}</b>")
         layout.addRow(processing_section)
         
-        self.bkgscale_spin = QtWidgets.QDoubleSpinBox()
+        self.bkgscale_spin = FreeNumberEdit()
         self.bkgscale_spin.setRange(0.0, 10.0)
         self.bkgscale_spin.setValue(1.0)
         self.bkgscale_spin.setSingleStep(0.1)
         self.bkgscale_spin.setDecimals(3)
         self.bkgscale_spin.setMinimumWidth(120)
-        self.bkgscale_spin.setToolTip("背景缩放因子 / Background scaling factor\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.bkgscale_spin.setToolTip(
+            "背景缩放因子 / Background scaling factor\n"
+            "扣除背景文件前对背景强度乘上的比例系数。\n"
+            "背景过强会过度扣除，过弱会留下容器或空气散射贡献。"
+        )
         layout.addRow(tr('bkg_scale'), self.bkgscale_spin)
         
-        self.rpoly_spin = QtWidgets.QDoubleSpinBox()
+        self.rpoly_spin = FreeNumberEdit()
         self.rpoly_spin.setRange(0.0, 3.0)
         self.rpoly_spin.setValue(1.0)
         self.rpoly_spin.setSingleStep(0.1)
         self.rpoly_spin.setDecimals(2)
         self.rpoly_spin.setMinimumWidth(120)
-        self.rpoly_spin.setToolTip("PDF截断波纹修正多项式参数\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rpoly_spin.setToolTip(
+            "rpoly\n"
+            "低 r 区域多项式修正参数，用于减弱有限 Q 范围带来的截断波纹。\n"
+            "通常从默认值开始，仅在低 r 基线异常时调整。"
+        )
         layout.addRow(tr('rpoly'), self.rpoly_spin)
         
         # Lorch modification checkbox
@@ -389,36 +447,47 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addRow(q_section)
         
         # Qmax(inst) first
-        self.qmaxinst_spin = QtWidgets.QDoubleSpinBox()
+        self.qmaxinst_spin = FreeNumberEdit()
         self.qmaxinst_spin.setRange(1.0, 100.0)
         self.qmaxinst_spin.setValue(23.0)
         self.qmaxinst_spin.setSingleStep(0.1)
         self.qmaxinst_spin.setDecimals(2)
         self.qmaxinst_spin.setSuffix(" Å⁻¹")
         self.qmaxinst_spin.setMinimumWidth(120)
-        self.qmaxinst_spin.setToolTip("仪器Q最大值 / Instrument Q max\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.qmaxinst_spin.setToolTip(
+            "仪器 Q 最大值 / qmax-inst\n"
+            "仪器或数据实际可达到的最高 Q，代表实验数据的硬上限。\n"
+            "输入后若 qmax 不小于该值，程序会自动把 qmax 调到更小。"
+        )
         layout.addRow(tr('label_qmax_inst'), self.qmaxinst_spin)
         
         # Then qmin
-        self.qmin_spin = QtWidgets.QDoubleSpinBox()
+        self.qmin_spin = FreeNumberEdit()
         self.qmin_spin.setRange(0.01, 100.0)
         self.qmin_spin.setValue(1.0)
         self.qmin_spin.setSingleStep(0.1)
         self.qmin_spin.setDecimals(2)
         self.qmin_spin.setSuffix(" Å⁻¹")
         self.qmin_spin.setMinimumWidth(120)
-        self.qmin_spin.setToolTip("Q最小值 / Q minimum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.qmin_spin.setToolTip(
+            "Q 最小值 / qmin\n"
+            "傅里叶变换使用的最低 Q。过低区域若含强背景或束挡影响，可适当提高。"
+        )
         layout.addRow(tr('label_qmin'), self.qmin_spin)
         
         # Then qmax
-        self.qmax_spin = QtWidgets.QDoubleSpinBox()
+        self.qmax_spin = FreeNumberEdit()
         self.qmax_spin.setRange(1.0, 100.0)
         self.qmax_spin.setValue(23.0)
         self.qmax_spin.setSingleStep(0.1)
         self.qmax_spin.setDecimals(2)
         self.qmax_spin.setSuffix(" Å⁻¹")
         self.qmax_spin.setMinimumWidth(120)
-        self.qmax_spin.setToolTip("Q最大值 / Q maximum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.qmax_spin.setToolTip(
+            "Q 最大值 / qmax\n"
+            "傅里叶变换使用的最高 Q，决定 PDF 的实空间分辨率。\n"
+            "qmax 越高，分辨率越好；但噪声也会更容易进入 G(r)。"
+        )
         layout.addRow(tr('label_qmax'), self.qmax_spin)
         
         layout.addRow(QtWidgets.QLabel(""))  # Spacer
@@ -427,34 +496,43 @@ class MainWindow(QtWidgets.QMainWindow):
         r_section = QtWidgets.QLabel(f"<b>{tr('group_r_params')}</b>")
         layout.addRow(r_section)
         
-        self.rmin_spin = QtWidgets.QDoubleSpinBox()
+        self.rmin_spin = FreeNumberEdit()
         self.rmin_spin.setRange(0.01, 100.0)
         self.rmin_spin.setValue(0.5)
         self.rmin_spin.setSingleStep(0.1)
         self.rmin_spin.setDecimals(2)
         self.rmin_spin.setSuffix(" Å")
         self.rmin_spin.setMinimumWidth(120)
-        self.rmin_spin.setToolTip("R最小值 / R minimum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rmin_spin.setToolTip(
+            "r 最小值 / rmin\n"
+            "输出 PDF G(r) 的起始距离。通常避开非常低 r 的非物理振荡区域。"
+        )
         layout.addRow(tr('label_rmin'), self.rmin_spin)
         
-        self.rmax_spin = QtWidgets.QDoubleSpinBox()
+        self.rmax_spin = FreeNumberEdit()
         self.rmax_spin.setRange(1.0, 10000.0)
         self.rmax_spin.setValue(30.0)
         self.rmax_spin.setSingleStep(1.0)
         self.rmax_spin.setDecimals(1)
         self.rmax_spin.setSuffix(" Å")
         self.rmax_spin.setMinimumWidth(120)
-        self.rmax_spin.setToolTip("R最大值 / R maximum\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rmax_spin.setToolTip(
+            "r 最大值 / rmax\n"
+            "输出 PDF G(r) 的最大距离，决定结果曲线显示和保存到多远。"
+        )
         layout.addRow(tr('label_rmax'), self.rmax_spin)
         
-        self.rstep_spin = QtWidgets.QDoubleSpinBox()
+        self.rstep_spin = FreeNumberEdit()
         self.rstep_spin.setRange(0.001, 1.0)
         self.rstep_spin.setValue(0.01)
         self.rstep_spin.setSingleStep(0.001)
         self.rstep_spin.setDecimals(3)
         self.rstep_spin.setSuffix(" Å")
         self.rstep_spin.setMinimumWidth(120)
-        self.rstep_spin.setToolTip("R步长 / R step\n↑ 绿色：增加 (Increase) | ↓ 红色：减少 (Decrease)")
+        self.rstep_spin.setToolTip(
+            "r 步长 / rstep\n"
+            "G(r) 在实空间的采样间隔。步长越小曲线越密，但文件更大、计算更慢。"
+        )
         layout.addRow(tr('label_rstep'), self.rstep_spin)
         
         layout.addRow(QtWidgets.QLabel(""))  # Spacer
@@ -573,6 +651,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Q-space parameters
         self.qmin_spin.valueChanged.connect(self._on_parameter_changed)
         self.qmax_spin.valueChanged.connect(self._on_parameter_changed)
+        self.qmaxinst_spin.valueChanged.connect(self._keep_qmax_below_qmaxinst)
         self.qmaxinst_spin.valueChanged.connect(self._on_parameter_changed)
         
         # R-space parameters
@@ -599,6 +678,20 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.data_file_edit.text():
                 logger.debug("Parameter changed, triggering auto-recalculation")
                 self._run_calculation()
+
+    def _keep_qmax_below_qmaxinst(self):
+        if self._syncing_qmax:
+            return
+        try:
+            qmaxinst = self.qmaxinst_spin.value()
+            qmax = self.qmax_spin.value()
+        except ValueError:
+            return
+        if qmax < qmaxinst:
+            return
+        self._syncing_qmax = True
+        self.qmax_spin.setValue(max(0.0, qmaxinst - 0.01))
+        self._syncing_qmax = False
     
     def _on_display_changed(self):
         """Handle display option change - update plot if results exist."""
@@ -761,7 +854,11 @@ class MainWindow(QtWidgets.QMainWindow):
         """Run PDF calculation (single or batch)."""
         from ..workers import CalculationWorker, MultiCalculationWorker
         
-        params = self._get_parameters()
+        try:
+            params = self._get_parameters()
+        except ValueError as exc:
+            QtWidgets.QMessageBox.warning(self, "参数错误", str(exc))
+            return
         bkg_file = self.bkg_file_edit.text() if self.bkg_file_edit.text() else None
         
         # Check for selected files in list

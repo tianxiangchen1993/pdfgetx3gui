@@ -1,246 +1,220 @@
-# PDFgetX3 GUI v2.0 - Modern PyQt6 Implementation
+# PDFgetX3GUI v2.0
 
-English | [简体中文](README_CN.md)
+PDFgetX3GUI 是一个面向 PDFgetX3 的 Windows 图形界面，用于从 X-ray / neutron total scattering 数据中计算和查看 PDF 结果。
 
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![PyQt6](https://img.shields.io/badge/PyQt-6.0+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+本项目重点解决命令行 PDFgetX3 对新用户不够友好的问题：把数据文件选择、参数设置、计算、绘图和结果保存集中到一个 PyQt6 桌面界面中。
 
-**A modern, fully-functional GUI for PDFgetX3** with complete PyQt6 migration, enhanced UI/UX, and robust PDF analysis features.
+## 当前状态
 
-## 🎯 What's New in v2.0.1 (December 2024)
+- GUI 版本：v2.0.0
+- 推荐系统：Windows
+- 推荐 Python 环境：Conda 环境 `pdfgetx3`
+- GUI 框架：PyQt6
+- 计算核心：PDFgetX3 / `diffpy.pdfgetx`
 
-### 🔧 Critical Fixes
-- ✅ **PyQt6 Compatibility**: Fixed all PyQt5→PyQt6 enum access issues (QAbstractItemView, QFormLayout, QDialogButtonBox, QFileDialog)
-- ✅ **Lorch Algorithm Bug**: **CRITICAL FIX** - Lorch-corrected and uncorrected files now save different data correctly
-- ✅ **Plot Display**: Added missing x-axis labels for I(Q) and S(Q) plots
-- ✅ **Module Migration**: Moved QShortcut from QtWidgets to QtGui for Qt6 compatibility
+安装包只包含 GUI 和相关 Python 依赖，不包含 PDFgetX3 本体。使用前请先确认 PDFgetX3 已经可以在本机正常运行。
 
-### ✨ New Features
-- 🎨 **Enhanced SpinBox UI**: Color-coded up/down buttons (green ↑ increase, red ↓ decrease) with tooltips
-- 📁 **Smart File Naming**: New convention `{sample}_qmax{value}.lorch.{extension}` for better data organization
-- 📊 **Lorch Data Export**: Separate export for original and Lorch-corrected F(Q) and G(r) data
+## 主要功能
 
-## 📋 Requirements
+- 支持选择实验数据文件和背景文件。
+- 支持 Q / 2theta 数据格式。
+- 支持设置 wavelength、composition、qmin、qmax、rmin、rmax、rstep 等 PDFgetX3 参数。
+- 支持 I(Q)、S(Q)、F(Q)、G(r) 图形显示。
+- 支持批量文件处理和结果保存。
+- 支持 Lorch 修正，用于降低 PDF 截断振荡。
+- 提供 Windows 安装包构建脚本，便于分发给已有 PDFgetX3 环境的用户。
 
-- Python 3.8 or higher
-- **PyQt6** >= 6.0.0 (Qt 6 framework)
-- PDFgetX3 ([diffpy.pdfgetx](https://www.diffpy.org/products/pdfgetx.html))
-- matplotlib >= 3.5.0 (with Qt6 backend support)
-- NumPy >= 1.19.0
-- SciPy >= 1.5.0
+## 安装前提
 
-## 🚀 Quick Start
+请先完成以下准备：
 
-### 1. Install PDFgetX3 (Required)
+1. 安装 Anaconda 或 Miniconda。
+2. 创建或准备名为 `pdfgetx3` 的 conda 环境。
+3. 在该环境中安装并确认 PDFgetX3 可用。
 
-PDFgetX3 requires a free academic license from Columbia University:
+可用下面命令检查 PDFgetX3：
 
-1. Visit: [https://columbia.resoluteinnovation.com/technologies/M11-120](https://columbia.resoluteinnovation.com/technologies/M11-120)
-2. Sign up for academic license (free for research use)
-3. Download and install following the provided instructions
+```bat
+conda activate pdfgetx3
+pdfgetx3 --version
+python -c "import diffpy.pdfgetx; print('PDFgetX3 OK')"
+```
 
-**Documentation**: [https://www.diffpy.org/products/pdfgetx.html](https://www.diffpy.org/products/pdfgetx.html)
+如果上述命令失败，请先修复 PDFgetX3 环境，再安装本 GUI。
 
-### 2. Install GUI
+## 使用安装包安装
 
-```bash
-# Clone repository
+面向普通用户，推荐使用发布包：
+
+```text
+PDFgetX3GUI-v2.0.0-win-installer.zip
+```
+
+安装步骤：
+
+1. 解压 zip 文件。
+2. 双击运行 `install_pdfgetx3gui.bat`。
+3. 等待出现 `PDFgetX3GUI import check OK`。
+4. 双击 `launch_pdfgetx3gui.bat` 启动程序。
+
+安装包会从自带的 `wheels/` 目录安装 GUI 依赖，因此可以减少网络依赖。它仍然要求本机已经有可用的 `pdfgetx3` conda 环境。
+
+## 从源码安装
+
+适合开发者或需要修改源码的用户。
+
+```bat
 git clone https://github.com/tianxiangchen1993/pdfgetx3gui.git
 cd pdfgetx3gui
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Install package
-pip install -e .
+conda activate pdfgetx3
+python -m pip install -e .
 ```
 
-### 3. Launch
+安装后可以运行：
 
-```bash
+```bat
 pdfgetx3gui-v2
-# or simply
-pdfgetx3gui
 ```
 
-## 💻 Usage Guide
+如果系统中旧启动器指向了错误 Python，也可以直接运行：
 
-### Basic Workflow
-
-1. **Load Data**: Select your diffraction data file (.xy, .chi, or 2θ format)
-2. **Set Parameters**: 
-   - Qmax(inst): Instrument Q maximum
-   - Qmin/Qmax: Analysis range
-   - Composition: Sample chemical formula
-3. **Optional**: Enable Lorch modification to reduce PDF termination ripples
-4. **Calculate**: Press F5 or click Calculate button
-5. **Review**: Check I(Q), S(Q), F(Q), and G(r) plots
-6. **Save**: Export results with smart file naming
-
-### File Naming Convention
-
-**Without Lorch**:
-- `sample_qmax20.iq`, `.sq`, `.fq`, `.gr`
-
-**With Lorch enabled**:
-- `sample_qmax20.fq` - Original F(Q)
-- `sample_qmax20.gr` - Original G(r)
-- `sample_qmax20.lorch.fq` - Lorch-corrected F(Q)
-- `sample_qmax20.lorch.gr` - Lorch-corrected G(r)
-
-### Lorch Modification
-
-The Lorch function `M(Q) = sinc(Q/Qmax)` smoothly damps F(Q) near Qmax, reducing spurious oscillations in G(r):
-
-- **Enable**: Check "Apply Lorch Modification" in Parameters tab
-- **Effect**: Reduces termination ripples while preserving peak positions
-- **Output**: Both original and Lorch-corrected data can be saved separately
-
-## ✨ Key Features
-
-### Data Input
-- Multiple format support (Q-space, 2θ-space)
-- Background file subtraction
-- File history and quick access
-- Smart parameter validation
-
-### Parameter Control
-- Color-coded SpinBox controls with visual feedback
-- Real-time validation
-- Parameter presets support
-- Comprehensive tooltips (bilingual)
-
-### Data Processing
-- Composition-based corrections
-- Background scaling
-- Polynomial termination ripple correction
-- **Lorch modification** for PDF quality improvement
-
-### Visualization
-- Real-time plot updates
-- Multiple simultaneous plots (I(Q), S(Q), F(Q), G(r))
-- Modern matplotlib styling
-- Interactive zoom and pan
-
-### Data Export
-- Smart file naming with qmax values
-- Separate original and Lorch-corrected outputs
-- Configuration file (.cfg) export
-- Batch processing support
-
-## 🏗️ Architecture
-
-```
-pdfgetx3gui/
-├── src/pdfgetx3_gui/
-│   ├── config/          # Settings management
-│   │   └── settings.py  # PDFParameters dataclass
-│   ├── core/            # Calculation engine
-│   │   └── calculator.py # PDFCalculator with Lorch support
-│   ├── gui/             # User interface
-│   │   ├── main_window.py # Main application window
-│   │   └── styles.py    # Modern UI styling
-│   ├── plotting/        # Visualization
-│   │   └── plot_widget.py # Enhanced matplotlib plots
-│   └── utils/           # Logging and utilities
-├── tests/               # Test suite
-├── examples/            # Example data and outputs
-└── docs/                # Documentation
-```
-
-## 🔧 Development
-
-### Run from Source
-
-```bash
-cd pdfgetx3gui
+```bat
 python -m pdfgetx3_gui.main
 ```
 
-### Code Quality
+## 从源码直接启动
 
-```bash
-# Type checking
-mypy src/pdfgetx3_gui
+在项目目录中运行：
 
-# Code formatting  
-black src/pdfgetx3_gui
-
-# Run tests
-pytest tests/
+```bat
+conda activate pdfgetx3
+run.bat
 ```
 
-## 📊 PyQt6 Migration Details
+`run.bat` 会检查 PyQt6、SciPy 和 `diffpy.pdfgetx` 是否可导入，并尽量选择正确的 Python 解释器启动 GUI。
 
-| Component | PyQt5 API | PyQt6 API (Fixed) |
-|-----------|-----------|-------------------|
-| Selection Mode | `QAbstractItemView.ExtendedSelection` | `QAbstractItemView.SelectionMode.ExtendedSelection` |
-| Field Growth | `QFormLayout.ExpandingFieldsGrow` | `QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow` |
-| Dialog Buttons | `QDialogButtonBox.Ok` | `QDialogButtonBox.StandardButton.Ok` |
-| File Dialog | `QFileDialog.ShowDirsOnly` | `QFileDialog.Option.ShowDirsOnly` |
-| Shortcuts | `QtWidgets.QShortcut` | `QtGui.QShortcut` |
+## 打包 Windows 安装包
 
-## 🐛 Known Issues & Fixes
+项目提供了打包脚本：
 
-### Fixed in v2.0.1
-- ✅ Lorch-corrected files were identical to uncorrected files (CRITICAL)
-- ✅ Missing x-axis labels on I(Q) and S(Q) plots
-- ✅ PyQt6 enum AttributeErrors on startup
-- ✅ QShortcut module import error
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\build_windows_installer.ps1
+```
 
-### Current Limitations
-- Drag & drop file support (planned)
-- Plot export to image files (planned)
-- Multiple configuration profiles (planned)
+默认会生成：
 
-## 🤝 Contributing
+```text
+dist\PDFgetX3GUI-v2.0.0-win-installer\
+dist\PDFgetX3GUI-v2.0.0-win-installer.zip
+```
 
-Contributions welcome! Please:
+如果 PDFgetX3 环境名称不是 `pdfgetx3`，可以指定环境名：
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\build_windows_installer.ps1 -EnvName YOUR_ENV_NAME
+```
 
-## 📝 License
+注意：生成的 zip 文件较大，不建议直接提交到 GitHub 仓库。更适合放在 GitHub Release、网盘或邮件附件中。
 
-MIT License - see [LICENSE](LICENSE) file for details
+## 基本使用流程
 
-## 🙏 Acknowledgments
+1. 打开 GUI。
+2. 选择数据文件。
+3. 选择数据格式：`Q` 或 `2theta`。
+4. 填写 wavelength 和 composition。
+5. 设置 PDFgetX3 计算参数。
+6. 点击“计算”或按 `F5`。
+7. 查看 I(Q)、S(Q)、F(Q)、G(r)。
+8. 点击“保存结果”导出数据。
 
-- **Original PDFgetX3 GUI**: Kenneth P. Marshall
-- **PDFgetX3 Algorithm**: Simon Billinge and Pavol Juhás (Columbia University)
-- **Development**: Powered by [Google Gemini](https://deepmind.google/technologies/gemini/)
+## 输出文件
 
-### 🤖 AI-Assisted Development
+程序会根据用户设置保存不同类型的数据文件。常见输出包括：
 
-This project demonstrates modern AI-assisted software engineering. The v2.0 optimization was accomplished through collaboration with **Google Gemini 2.0**, featuring:
+- `.iq`：I(Q)
+- `.sq`：S(Q)
+- `.fq`：F(Q)
+- `.gr`：G(r)
+- `.cfg`：PDFgetX3 配置文件
 
-- Complete PyQt5 → PyQt6 migration with API compatibility fixes
-- Implementation of Lorch modification algorithm
-- Modern Python architecture (MVC pattern, type hints, dataclasses)
-- Comprehensive bilingual documentation
-- Critical bug detection and resolution
+启用 Lorch 修正时，程序会区分原始结果和 Lorch 修正后的结果，避免覆盖或混淆。
 
-**Production-ready code, delivered at unprecedented speed.**
+## 项目结构
 
-## 📞 Support
+```text
+src/pdfgetx3_gui/
+  config/      配置和参数
+  core/        PDF 计算封装
+  gui/         PyQt6 界面
+  plotting/    绘图组件
+  workers/     后台计算线程
+  utils/       文件、日志和工具函数
+tools/
+  build_windows_installer.ps1
+examples/
+  示例数据和输出
+```
 
-- **Repository**: [https://github.com/tianxiangchen1993/pdfgetx3gui](https://github.com/tianxiangchen1993/pdfgetx3gui)
-- **Issues**: [GitHub Issues](https://github.com/tianxiangchen1993/pdfgetx3gui/issues)
-- **PDFgetX3 Docs**: [https://www.diffpy.org/products/pdfgetx.html](https://www.diffpy.org/products/pdfgetx.html)
+## 常见问题
 
-## 🗺️ Roadmap
+### 1. 启动时报 PyQt6 DLL load failed
 
-- [ ] Drag & drop file loading
-- [ ] Plot export (PNG, SVG, PDF)
-- [ ] Multiple dataset comparison
-- [ ] Advanced fitting tools
-- [ ] Configuration profiles management
-- [ ] Plugin system for custom processing
+通常是启动器使用了错误的 Python 环境。请先激活 `pdfgetx3` 环境，再运行：
 
----
+```bat
+python -m pdfgetx3_gui.main
+```
 
-**Last Updated**: December 2024 | **Version**: 2.0.1
+当前版本已加入自动转交逻辑：如果旧启动器从 base Python 启动，会尝试切换到当前激活的 conda 环境 Python。
+
+### 2. 提示找不到 `diffpy.pdfgetx`
+
+说明 PDFgetX3 没有安装到当前 Python 环境。请先确认：
+
+```bat
+conda activate pdfgetx3
+python -c "import diffpy.pdfgetx"
+```
+
+### 3. 提示找不到 `scipy`
+
+请在 `pdfgetx3` 环境中重新安装 GUI：
+
+```bat
+conda activate pdfgetx3
+python -m pip install -e .
+```
+
+或者运行安装包中的 `install_pdfgetx3gui.bat`。
+
+### 4. 安装包是否包含 PDFgetX3
+
+不包含。安装包只包含 GUI 和 GUI 依赖。PDFgetX3 本体需要用户提前按其许可和安装说明配置好。
+
+## 开发说明
+
+推荐在 `pdfgetx3` 环境中开发：
+
+```bat
+conda activate pdfgetx3
+python -m pip install -e .
+python -m pdfgetx3_gui.main
+```
+
+提交前建议至少做一次启动检查：
+
+```bat
+set QT_QPA_PLATFORM=offscreen
+python -c "from PyQt6 import QtWidgets; import scipy; import diffpy.pdfgetx; from pdfgetx3_gui.gui import MainWindow; app=QtWidgets.QApplication([]); window=MainWindow(); print('OK')"
+```
+
+## 许可证
+
+本项目使用 MIT License。PDFgetX3 本体及其许可请参考 PDFgetX3 官方说明。
+
+## 致谢
+
+- PDFgetX3：Simon Billinge 和 Pavol Juhás 等开发者。
+- 原始 PDFgetX3 GUI：Kenneth P. Marshall。
+- 本项目在原有 GUI 思路基础上进行了 PyQt6 化、界面整理、启动环境修复和 Windows 打包流程整理。
